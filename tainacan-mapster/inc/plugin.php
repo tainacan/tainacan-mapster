@@ -2,9 +2,47 @@
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+if ( ! function_exists( 'tainacan_mapster_has_tainacan' ) ) {
+	/**
+	 * Whether Tainacan is active and loaded.
+	 *
+	 * @return bool
+	 */
+	function tainacan_mapster_has_tainacan() {
+		return defined( 'TAINACAN_VERSION' ) && class_exists( '\Tainacan\Metadata_Types\Metadata_Type_Helper' );
+	}
+}
+
+if ( ! function_exists( 'tainacan_mapster_has_mapster' ) ) {
+	/**
+	 * Whether Mapster WP Maps is active (free or Pro).
+	 *
+	 * Pro often uses a different plugin folder/slug than `mapster-wp-maps`, so we
+	 * detect by Mapster's own bootstrap constant, CPT, or shortcode — not by slug.
+	 *
+	 * @return bool
+	 */
+	function tainacan_mapster_has_mapster() {
+		if ( defined( 'MAPSTER_WORDPRESS_MAPS_VERSION' ) ) {
+			return true;
+		}
+
+		if ( post_type_exists( 'mapster-wp-map' ) ) {
+			return true;
+		}
+
+		return shortcode_exists( 'mapster_wp_map' );
+	}
+}
+
 if ( ! function_exists( 'tainacan_mapster_has_dependencies' ) ) {
+	/**
+	 * Whether both Tainacan and Mapster (free or Pro) are available.
+	 *
+	 * @return bool
+	 */
 	function tainacan_mapster_has_dependencies() {
-		return defined( 'TAINACAN_VERSION' ) && post_type_exists( 'mapster-wp-map' );
+		return tainacan_mapster_has_tainacan() && tainacan_mapster_has_mapster();
 	}
 }
 
@@ -49,15 +87,30 @@ if ( ! function_exists( 'tainacan_mapster_register_metadata_form_component' ) ) 
 }
 
 if ( ! function_exists( 'tainacan_mapster_admin_notice_missing_dependencies' ) ) {
+	/**
+	 * Admin notice when Tainacan and/or Mapster WP Maps (free or Pro) is missing.
+	 */
 	function tainacan_mapster_admin_notice_missing_dependencies() {
 		if ( tainacan_mapster_has_dependencies() ) {
 			return;
 		}
+
+		$missing = [];
+		if ( ! tainacan_mapster_has_tainacan() ) {
+			$missing[] = 'Tainacan';
+		}
+		if ( ! tainacan_mapster_has_mapster() ) {
+			$missing[] = 'Mapster WP Maps (free or Pro)';
+		}
+
+		$message = sprintf(
+			/* translators: %s: comma-separated list of missing plugin names. */
+			__( 'Tainacan Mapster Integration requires the following to be installed and active: %s.', 'tainacan-mapster' ),
+			implode( ', ', $missing )
+		);
 		?>
 		<div class="notice notice-error">
-			<p>
-				<?php esc_html_e( 'Tainacan Mapster Integration requires both Tainacan and Mapster WP Maps to be active.', 'tainacan-mapster' ); ?>
-			</p>
+			<p><?php echo esc_html( $message ); ?></p>
 		</div>
 		<?php
 	}

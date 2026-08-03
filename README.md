@@ -54,11 +54,10 @@ Multiple values (one map):
 
 ## Dependencies
 
-- [Tainacan](https://wordpress.org/plugins/tainacan/) (Requires at least WP 6.5, PHP 7.4)
-- [Mapster WP Maps](https://wordpress.org/plugins/mapster-wp-maps/)
+- [Tainacan](https://wordpress.org/plugins/tainacan/) (Requires at least WP 6.5, PHP 7.4) — also listed in `Requires Plugins`
+- [Mapster WP Maps](https://wordpress.org/plugins/mapster-wp-maps/) free **or** Pro — detected at runtime (`MAPSTER_WORDPRESS_MAPS_VERSION`, `mapster-wp-map` CPT, or `mapster_wp_map` shortcode), not via `Requires Plugins` (Pro uses a different folder/slug)
 
-Plugin header declares both via `Requires Plugins`.
-
+Plugin header: `Requires Plugins: tainacan` only.
 ## Development
 
 Repository: https://github.com/tainacan/tainacan-mapster

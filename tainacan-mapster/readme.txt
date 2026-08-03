@@ -4,7 +4,7 @@ Tags: tainacan, mapster, maps, metadata, digital collection
 Requires at least: 6.5
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.0.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -18,7 +18,7 @@ This plugin is **not** an official Mapster product. Mapster WP Maps is developed
 
 It provides a **Mapster Feature** metadata type so collection items can reference Mapster locations, lines, and/or polygons and display them using a configured Mapster map.
 
-Both Tainacan and Mapster WP Maps must be installed and active. The free Mapster plugin slug is `mapster-wp-maps` (also used by `Requires Plugins`). If you use a Pro build under a different folder name, activate it so the `mapster-wp-map` post type exists.
+Both Tainacan and Mapster WP Maps (free **or** Pro) must be installed and active. Mapster Pro may use a different plugin folder than the free `.org` slug, so this plugin detects Mapster at runtime (version constant, `mapster-wp-map` post type, or shortcode) instead of declaring it in `Requires Plugins`.
 
 = Rendering =
 
@@ -39,7 +39,7 @@ Developers can override that choice with the `tainacan_mapster_should_use_embed_
 
 = Why is the plugin inactive or showing an error notice? =
 
-It requires both Tainacan and Mapster WP Maps (so the `mapster-wp-map` post type exists). Activate those plugins first.
+It needs **Tainacan** and **Mapster WP Maps** (free or Pro) active. The admin notice lists whichever dependency is missing. Mapster is detected by its loaded API (not by a fixed plugin slug), so Pro installs are supported.
 
 = Does it work in the Tainacan admin item page? =
 
@@ -59,5 +59,5 @@ Build the metadata input bundle with `npm install && npm run build` inside the p
 
 == Changelog ==
 
-= 0.1.0 =
-* Initial release: Mapster Feature metadata type, shortcode rendering, and iframe embed for SPA/REST contexts.
+= 0.0.1 =
+* Alpha: Mapster Feature metadata type, shortcode rendering, and iframe embed for SPA/REST contexts.

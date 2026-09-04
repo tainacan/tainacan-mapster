@@ -1,7 +1,7 @@
 window.tainacan_extra_components = typeof window.tainacan_extra_components !== "undefined" ? window.tainacan_extra_components : {};
 
 /**
- * Metadata type options form for Mapster Feature.
+ * Metadata type options form for Mapster Map.
  *
  * Component slug must match set_form_component() in the PHP class:
  * tainacan-metadata-form-type-mapster-single-feature
@@ -112,7 +112,7 @@ var TainacanMetadataFormMapsterSingleFeature = {
                     required
                     @update:model-value="onSelectMap">
                 <option value="" disabled>
-                    {{ $i18n.get('label_select') }}
+                    {{ $i18n.get('label_selectbox_init') }}
                 </option>
                 <option
                         v-for="mapOption in mapOptions"

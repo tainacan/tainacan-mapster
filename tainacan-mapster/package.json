@@ -1,12 +1,12 @@
 {
   "name": "tainacan-mapster",
-  "version": "0.0.1",
-  "description": "Tainacan metadata types for Mapster single features.",
+  "version": "0.1.0",
+  "description": "Tainacan integration plugin for using Mapster Maps as a Tainacan Metadata.",
   "private": true,
   "scripts": {
     "build": "node metadata_type/build.js"
   },
   "devDependencies": {
-    "@vue/compiler-sfc": "^3.5.0"
+    "@vue/compiler-sfc": "^3.5.42"
   }
 }

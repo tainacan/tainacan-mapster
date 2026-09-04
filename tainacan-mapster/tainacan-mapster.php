@@ -2,11 +2,10 @@
 /*
 Plugin Name: Tainacan Mapster Integration
 Plugin URI: https://github.com/tainacan/tainacan-mapster
-Description: Registers Tainacan metadata types for selecting Mapster single features.
+Description: Registers a Tainacan metadata type for selecting Mapster map elements and displaying them on a base map.
 Author: Tainacan
-Version: 0.0.1
+Version: 0.1.0
 Text Domain: tainacan-mapster
-Domain Path: /languages
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Requires at least: 6.5
@@ -16,7 +15,7 @@ Requires Plugins: tainacan
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-define( 'TAINACAN_MAPSTER_VERSION', '0.0.1' );
+define( 'TAINACAN_MAPSTER_VERSION', '0.1.0' );
 define( 'TAINACAN_MAPSTER_PLUGIN_FILE', __FILE__ );
 define( 'TAINACAN_MAPSTER_PLUGIN_DIR_PATH', __DIR__ );
 define( 'TAINACAN_MAPSTER_PLUGIN_URL_PATH', plugin_dir_url( __FILE__ ) );

@@ -73,7 +73,7 @@ function tainacan_mapster_should_use_embed_iframe() {
 	}
 
 	/**
-	 * Filter whether Mapster Feature metadata HTML uses the iframe embed.
+	 * Filter whether Mapster Map metadata HTML uses the iframe embed.
 	 *
 	 * @param bool $use_embed True to render an iframe; false for do_shortcode().
 	 */
@@ -142,7 +142,7 @@ function tainacan_mapster_render_embed_document() {
 
 	if ( empty( $feature_ids ) ) {
 		status_header( 404 );
-		wp_die( esc_html__( 'No viewable Mapster features were found for this embed.', 'tainacan-mapster' ), '', [ 'response' => 404 ] );
+		wp_die( esc_html__( 'No viewable Mapster map elements were found for this embed.', 'tainacan-mapster' ), '', [ 'response' => 404 ] );
 	}
 
 	if ( 1 === count( $feature_ids ) ) {

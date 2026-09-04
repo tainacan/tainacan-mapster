@@ -3,7 +3,7 @@
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 /**
- * Mapster feature post types this integration may reference.
+ * Mapster element post types this integration may reference.
  *
  * @return string[]
  */
@@ -36,7 +36,7 @@ function tainacan_mapster_user_can_view_post( $post_id ) {
 }
 
 /**
- * Sanitize a list of feature IDs to allowed, viewable Mapster feature posts.
+ * Sanitize a list of element IDs to allowed, viewable Mapster element posts.
  *
  * @param int[]    $feature_ids       Candidate IDs.
  * @param string[] $allowed_post_types Optional CPT allow-list (defaults to all feature types).

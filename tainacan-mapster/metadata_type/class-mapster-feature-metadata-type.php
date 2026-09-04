@@ -8,10 +8,11 @@ use Tainacan\Entities\Metadatum;
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 /**
- * Single Mapster feature metadatum type.
+ * Mapster Map metadatum type.
  *
- * Stores a Mapster feature post ID and renders it via the Mapster shortcode.
- * Which feature post types are accepted is controlled by the `allowed_feature_types` option.
+ * Stores Mapster element post ID(s) (location / line / polygon) and renders them
+ * on a configured base Mapster map. Which element post types are accepted is
+ * controlled by the `allowed_feature_types` option.
  */
 class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 
@@ -22,8 +23,8 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 
 	public function __construct() {
 		parent::__construct();
-		$this->set_name( __( 'Mapster Feature', 'tainacan-mapster' ) );
-		$this->set_description( __( 'Select a Mapster Location, Line, and/or Polygon and render it on a Mapster map.', 'tainacan-mapster' ) );
+		$this->set_name( __( 'Mapster Map', 'tainacan-mapster' ) );
+		$this->set_description( __( 'Select Mapster locations, lines, and/or polygons and display them on a base Mapster map.', 'tainacan-mapster' ) );
 		$this->set_primitive_type( 'string' );
 		$this->set_component( 'tainacan-metadata-type-mapster-single-feature' );
 		$this->set_form_component( 'tainacan-metadata-form-type-mapster-single-feature' );
@@ -46,7 +47,7 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 					<div class="taginput-container is-focusable">
 						<div class="autocomplete control">
 							<div class="control has-icons-right is-clearfix">
-								<input type="text" class="input" value="' . esc_attr__( 'Mapster feature', 'tainacan-mapster' ) . '">
+								<input type="text" class="input" value="' . esc_attr__( 'Mapster map element', 'tainacan-mapster' ) . '">
 							</div>
 						</div>
 					</div>
@@ -56,7 +57,7 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 	}
 
 	/**
-	 * Allowed Mapster feature post type slugs.
+	 * Allowed Mapster element post type slugs.
 	 *
 	 * @return string[]
 	 */
@@ -69,7 +70,7 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 	}
 
 	/**
-	 * Human-readable labels for feature post types.
+	 * Human-readable labels for Mapster element post types.
 	 *
 	 * @return array<string, string>
 	 */
@@ -82,7 +83,7 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 	}
 
 	/**
-	 * Normalized list of allowed feature post types for this metadatum.
+	 * Normalized list of allowed element post types for this metadatum.
 	 *
 	 * @return string[]
 	 */
@@ -107,12 +108,12 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 	public function get_form_labels() {
 		return [
 			'mapster_map_id' => [
-				'title'       => __( 'Mapster map', 'tainacan-mapster' ),
-				'description' => __( 'The Mapster map used as context to render this feature.', 'tainacan-mapster' ),
+				'title'       => __( 'Base map', 'tainacan-mapster' ),
+				'description' => __( 'The Mapster map used as the base to display the selected elements.', 'tainacan-mapster' ),
 			],
 			'allowed_feature_types' => [
-				'title'       => __( 'Allowed feature types', 'tainacan-mapster' ),
-				'description' => __( 'Choose which Mapster feature post types this metadatum may reference. Select one or more.', 'tainacan-mapster' ),
+				'title'       => __( 'Allowed element types', 'tainacan-mapster' ),
+				'description' => __( 'Choose which Mapster element types this metadatum may reference: locations, lines, and/or polygons. Select one or more.', 'tainacan-mapster' ),
 			],
 		];
 	}
@@ -127,11 +128,11 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 		$allowed     = is_array( $allowed_raw ) ? array_values( array_intersect( array_map( 'sanitize_key', $allowed_raw ), self::get_available_feature_post_types() ) ) : [];
 
 		if ( empty( $allowed ) ) {
-			$errors['allowed_feature_types'] = __( 'Select at least one Mapster feature type (Location, Line, or Polygon).', 'tainacan-mapster' );
+			$errors['allowed_feature_types'] = __( 'Select at least one Mapster element type (Location, Line, or Polygon).', 'tainacan-mapster' );
 		}
 
 		if ( $map_required && ! $map_id ) {
-			$errors['mapster_map_id'] = __( 'The Mapster map option is required.', 'tainacan-mapster' );
+			$errors['mapster_map_id'] = __( 'The base map option is required.', 'tainacan-mapster' );
 		}
 
 		if ( $map_id && get_post_type( $map_id ) !== self::POST_TYPE_MAP ) {
@@ -154,18 +155,18 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 		foreach ( $values as $single_value ) {
 			$feature_id = absint( $single_value );
 			if ( ! $feature_id ) {
-				$this->add_error( __( 'Mapster feature value must be a numeric post ID.', 'tainacan-mapster' ) );
+				$this->add_error( __( 'Mapster map element value must be a numeric post ID.', 'tainacan-mapster' ) );
 				return false;
 			}
 
 			$post_type = get_post_type( $feature_id );
 			if ( ! in_array( $post_type, $allowed, true ) ) {
-				$this->add_error( __( 'Selected post does not match the allowed Mapster feature types for this metadatum.', 'tainacan-mapster' ) );
+				$this->add_error( __( 'Selected post does not match the allowed Mapster element types for this metadatum.', 'tainacan-mapster' ) );
 				return false;
 			}
 
 			if ( ! function_exists( 'tainacan_mapster_user_can_view_post' ) || ! tainacan_mapster_user_can_view_post( $feature_id ) ) {
-				$this->add_error( __( 'Selected Mapster feature is not available.', 'tainacan-mapster' ) );
+				$this->add_error( __( 'Selected Mapster map element is not available.', 'tainacan-mapster' ) );
 				return false;
 			}
 		}
@@ -287,6 +288,15 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 			);
 		}
 
-		return do_shortcode( $shortcode );
+		$styles = function_exists( 'tainacan_mapster_get_frontend_styles_html' )
+			? tainacan_mapster_get_frontend_styles_html()
+			: '';
+
+		// Wrapper + inline CSS keep the map block-level when themes style
+		// metadata values as inline-block (which collapses Mapster to 0×0).
+		return $styles . sprintf(
+			'<div class="tainacan-mapster-map">%s</div>',
+			do_shortcode( $shortcode )
+		);
 	}
 }

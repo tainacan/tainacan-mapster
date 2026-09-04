@@ -48,7 +48,7 @@ if ( ! function_exists( 'tainacan_mapster_has_dependencies' ) ) {
 
 if ( ! function_exists( 'tainacan_mapster_register_metadata_types' ) ) {
 	/**
-	 * Register the Mapster Feature metadata type on Tainacan's helper.
+	 * Register the Mapster Map metadata type on Tainacan's helper.
 	 *
 	 * Note: `tainacan-register-metadata-type` fires while Tainacan loads (too early
 	 * for plugins that load after it), so we call the helper directly on `init`.
@@ -165,12 +165,12 @@ if ( ! function_exists( 'tainacan_mapster_get_script_localization' ) ) {
 			$can_create       = $post_type_object && current_user_can( $post_type_object->cap->create_posts );
 			$type_label       = isset( $labels[ $post_type ] ) ? $labels[ $post_type ] : $post_type;
 
-			$feature_create[ $post_type ] = [
+				$feature_create[ $post_type ] = [
 				'can_create'  => (bool) $can_create,
 				'create_link' => $can_create ? admin_url( 'post-new.php?post_type=' . $post_type ) : '',
 				'label'       => $type_label,
 				'create_label' => sprintf(
-					/* translators: %s: Mapster feature type label (location, line, polygon). */
+					/* translators: %s: Mapster element type label (location, line, polygon). */
 					__( 'New %s', 'tainacan-mapster' ),
 					strtolower( $type_label )
 				),
@@ -184,8 +184,11 @@ if ( ! function_exists( 'tainacan_mapster_get_script_localization' ) ) {
 			'featureTypeLabels'     => $labels,
 			'availableFeatureTypes' => $feature_types,
 			'featureCreate'         => $feature_create,
-			'editFeatureLabel'      => __( 'Edit feature', 'tainacan-mapster' ),
+			'editFeatureLabel'      => __( 'Edit element', 'tainacan-mapster' ),
 			'editPostUrl'           => admin_url( 'post.php' ),
+			'homeUrl'               => home_url( '/' ),
+			'previewMapLabel'       => __( 'Preview', 'tainacan-mapster' ),
+			'previewMapMissing'     => __( 'Configure a base Mapster map for this metadatum to preview the selection.', 'tainacan-mapster' ),
 		];
 	}
 }
@@ -227,4 +230,46 @@ if ( ! function_exists( 'tainacan_mapster_localize_metadata_input_script' ) ) {
 }
 
 add_action( 'admin_enqueue_scripts', 'tainacan_mapster_localize_metadata_input_script', 85 );
+
+if ( ! function_exists( 'tainacan_mapster_get_frontend_styles_html' ) ) {
+	/**
+	 * Inline shortcode-map CSS once, when a map is actually rendered.
+	 *
+	 * Theme metadata values are often display:inline-block, which shrink-wraps
+	 * Mapster's percentage-sized container to 0×0. Rules target only our wrapper
+	 * and Mapster's root — not descendants (loader overlay must still hide).
+	 *
+	 * @return string Empty after the first call.
+	 */
+	function tainacan_mapster_get_frontend_styles_html() {
+		static $printed = false;
+
+		if ( $printed ) {
+			return '';
+		}
+
+		$printed = true;
+
+		$css = '
+			.tainacan-mapster-map {
+				display: block;
+				width: 100%;
+				max-width: 100%;
+				min-width: 100%;
+				box-sizing: border-box;
+			}
+			.tainacan-mapster-map .mapster-wp-maps-container {
+				display: block !important;
+				width: 100%;
+				max-width: 100%;
+				box-sizing: border-box;
+			}
+		';
+
+		return sprintf(
+			'<style id="tainacan-mapster-frontend-css">%s</style>',
+			wp_strip_all_tags( $css )
+		);
+	}
+}
 

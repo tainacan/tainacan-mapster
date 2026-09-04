@@ -1,6 +1,6 @@
 # Tainacan Mapster Integration
 
-WordPress plugin integrating Tainacan custom metadata types with Mapster WP Maps features.
+WordPress plugin integrating Tainacan custom metadata types with Mapster WP Maps.
 
 This is an **unofficial** integration. Mapster WP Maps is a third-party product.
 
@@ -8,14 +8,20 @@ This is an **unofficial** integration. Mapster WP Maps is a third-party product.
 
 Registers one Tainacan metadata type:
 
-- **Mapster Feature** — stores Mapster feature post ID(s) and renders them on a Mapster map
+- **Mapster Map** — stores Mapster element post ID(s) (location / line / polygon) and renders them on a configured base Mapster map
 
-When available, the type calls `set_manage_multiple_input( true )` so it can own multivalue UI (taginput + selected tab), similar to Relationship.
+### Usage flow
+
+1. **Mapster UI:** create the base map and map elements (locations, lines, polygons).
+2. **Tainacan metadatum:** create a **Mapster Map** field; `mapster_map_id` (base map) is required when publishing; choose `allowed_feature_types`.
+3. **Tainacan item edit:** select existing element IDs (autocomplete). Drawing/editing geometry stays in Mapster; optional create links open Mapster’s “new post” screens.
+
+When available, the type calls `set_manage_multiple_input( true )` so it can own multivalue UI (taginput + selected tab), similar to Relationship. The item form includes an optional **Preview** toggle that embeds the current selection on the configured map (same iframe endpoint as admin/REST rendering).
 
 ### Options
 
-- `mapster_map_id` (required when status is `publish` or `private`): Mapster map post ID (`mapster-wp-map`) used to render the feature.
-- `allowed_feature_types` (required, at least one): which Mapster feature post types this metadatum may reference:
+- `mapster_map_id` (required when status is `publish` or `private`): base Mapster map post ID (`mapster-wp-map`) used to render the elements.
+- `allowed_feature_types` (required, at least one): which Mapster element post types this metadatum may reference:
   - `mapster-wp-location`
   - `mapster-wp-line`
   - `mapster-wp-polygon`
@@ -41,6 +47,7 @@ Multiple values (one map):
 [mapster_wp_map id="{mapster_map_id}" feature_ids="{id1},{id2},{id3}"]
 ```
 
+Internally, Mapster still calls these “features” (`single_feature_id` / `feature_ids`). User-facing copy uses **map** / **element**.
 ## Structure
 
 - `tainacan-mapster/tainacan-mapster.php`: plugin bootstrap
@@ -51,13 +58,17 @@ Multiple values (one map):
 - `tainacan-mapster/metadata_type/build.js`: compiles the SFC into a host-Vue-compatible script
 - `tainacan-mapster/metadata_type/dist/metadata-type.bundle.js`: built script loaded by WordPress
 - `tainacan-mapster/metadata_type/metadata-type-form.js`: metadata options form (plain JS)
+- `wp-repo-assets/`: WordPress.org directory screenshots / banners / icons (not in the plugin ZIP; see that folder’s README)
 
 ## Dependencies
 
 - [Tainacan](https://wordpress.org/plugins/tainacan/) (Requires at least WP 6.5, PHP 7.4) — also listed in `Requires Plugins`
-- [Mapster WP Maps](https://wordpress.org/plugins/mapster-wp-maps/) free **or** Pro — detected at runtime (`MAPSTER_WORDPRESS_MAPS_VERSION`, `mapster-wp-map` CPT, or `mapster_wp_map` shortcode), not via `Requires Plugins` (Pro uses a different folder/slug)
+- [Mapster WP Maps](https://wordpress.org/plugins/mapster-wp-maps/) free **or** Pro
 
-Plugin header: `Requires Plugins: tainacan` only.
+Plugin header: `Requires Plugins: tainacan` only. Mapster Pro often uses a different folder/slug than the free `.org` plugin, so Mapster is detected at runtime (`MAPSTER_WORDPRESS_MAPS_VERSION`, `mapster-wp-map` CPT, or `mapster_wp_map` shortcode) instead of being declared there.
+
+WordPress.org user-facing copy lives in `tainacan-mapster/readme.txt`. Keep technical detail (filters, shortcodes, build, detection) here.
+
 ## Development
 
 Repository: https://github.com/tainacan/tainacan-mapster
@@ -90,10 +101,10 @@ The WordPress.org-oriented package drops `node_modules`, npm lockfiles, and Vue 
 
 ## Manual QA checklist
 
-- Create/edit a Tainacan metadatum and choose **Mapster Feature**.
-- Confirm options form requires a Mapster map (when publishing) and at least one feature type.
-- In item edition, confirm autocomplete searches only the allowed Mapster feature post types.
+- Create/edit a Tainacan metadatum and choose **Mapster Map**.
+- Confirm options form requires a base Mapster map (when publishing) and at least one element type.
+- In item edition, confirm autocomplete searches only the allowed Mapster element post types.
 - Save valid and invalid IDs to verify server-side validation.
 - Confirm theme rendering outputs the Mapster shortcode / map.
 - Confirm admin item view uses the iframe embed and the map boots.
-- With “allow multiple values” enabled, confirm all selected features appear on a single map.
+- With “allow multiple values” enabled, confirm all selected elements appear on a single map.

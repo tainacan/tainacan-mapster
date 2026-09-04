@@ -113,25 +113,64 @@
             </b-tab-item>
         </b-tabs>
         <div
-                v-if="creatableFeatureTypes.length && !disabled && canAddMore"
-                class="tainacan-mapster-create-actions">
-            <a
-                    v-for="postType in creatableFeatureTypes"
-                    :key="postType"
-                    class="tainacan-mapster-create-feature add-link"
-                    tabindex="0"
-                    role="button"
-                    @click.prevent="openFeatureCreate(postType)"
-                    @keydown.enter.prevent="openFeatureCreate(postType)"
-                    @keydown.space.prevent="openFeatureCreate(postType)">
-                <span
-                        aria-hidden="true"
-                        class="icon is-small">
-                    <i class="tainacan-icon has-text-secondary tainacan-icon-add" />
-                </span>
-                &nbsp;{{ getCreateFeatureLabel(postType) }}
-            </a>
+                v-if="showSecondaryActions"
+                class="tainacan-mapster-toolbar">
+            <template v-if="selected.length">
+                <a
+                        v-if="configuredMapId"
+                        class="tainacan-mapster-preview-toggle add-link"
+                        role="button"
+                        tabindex="0"
+                        @click.prevent="togglePreview"
+                        @keydown.enter.prevent="togglePreview"
+                        @keydown.space.prevent="togglePreview">
+                    <span
+                            aria-hidden="true"
+                            class="icon">
+                        <i class="tainacan-icon has-text-secondary tainacan-icon-see" />
+                    </span>
+                    &nbsp;{{ previewMapLabel }}
+                </a>
+                <p
+                        v-else
+                        class="tainacan-mapster-preview-missing help">
+                    {{ previewMapMissing }}
+                </p>
+            </template>
+            <div
+                    v-if="creatableFeatureTypes.length && !disabled && canAddMore"
+                    class="tainacan-mapster-toolbar__create">
+                <a
+                        v-for="postType in creatableFeatureTypes"
+                        :key="postType"
+                        class="tainacan-mapster-create-feature add-link"
+                        tabindex="0"
+                        role="button"
+                        @click.prevent="openFeatureCreate(postType)"
+                        @keydown.enter.prevent="openFeatureCreate(postType)"
+                        @keydown.space.prevent="openFeatureCreate(postType)">
+                    <span
+                            aria-hidden="true"
+                            class="icon is-small">
+                        <i class="tainacan-icon has-text-secondary tainacan-icon-add" />
+                    </span>
+                    &nbsp;{{ getCreateFeatureLabel(postType) }}
+                </a>
+            </div>
         </div>
+        <transition name="filter-item">
+            <div
+                    v-if="isPreviewing && previewEmbedUrl"
+                    class="tainacan-mapster-preview">
+                <iframe
+                        :key="previewEmbedUrl"
+                        class="tainacan-mapster-preview__frame"
+                        :src="previewEmbedUrl"
+                        :title="previewMapLabel"
+                        loading="lazy"
+                        allowfullscreen />
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -174,10 +213,49 @@ export default {
             hasMore: true,
             searchRequestToken: 0,
             activeTab: 0,
-            debouncedSearch: null
+            debouncedSearch: null,
+            isPreviewing: false
         };
     },
     computed: {
+        showSecondaryActions() {
+            const showPreview = this.selected.length > 0;
+            const showCreate = this.creatableFeatureTypes.length > 0 && !this.disabled && this.canAddMore;
+            return showPreview || showCreate;
+        },
+        configuredMapId() {
+            const options = this.itemMetadatum && this.itemMetadatum.metadatum && this.itemMetadatum.metadatum.metadata_type_options
+                ? this.itemMetadatum.metadatum.metadata_type_options
+                : {};
+            const mapId = parseInt(options.mapster_map_id, 10);
+            return mapId > 0 ? mapId : 0;
+        },
+        previewMapLabel() {
+            const cfg = typeof tainacanMapsterMetadatumForm !== 'undefined' ? tainacanMapsterMetadatumForm : null;
+            if (cfg && cfg.previewMapLabel) {
+                return cfg.previewMapLabel;
+            }
+            if (this.$i18n && typeof this.$i18n.get === 'function') {
+                return this.$i18n.get('label_preview', 'tainacan');
+            }
+            return 'Preview';
+        },
+        previewMapMissing() {
+            const cfg = typeof tainacanMapsterMetadatumForm !== 'undefined' ? tainacanMapsterMetadatumForm : null;
+            if (cfg && cfg.previewMapMissing) {
+                return cfg.previewMapMissing;
+            }
+            return 'Configure a base Mapster map for this metadatum to preview the selection.';
+        },
+        previewEmbedUrl() {
+            if (!this.isPreviewing || !this.configuredMapId || !this.selected.length) {
+                return '';
+            }
+            return this.buildEmbedUrl(
+                this.configuredMapId,
+                this.selected.map((item) => item.value)
+            );
+        },
         editFeatureLabel() {
             const cfg = typeof tainacanMapsterMetadatumForm !== 'undefined' ? tainacanMapsterMetadatumForm : null;
             if (cfg && cfg.editFeatureLabel) {
@@ -186,7 +264,7 @@ export default {
             if (this.$i18n && typeof this.$i18n.get === 'function') {
                 return this.$i18n.get('label_edit');
             }
-            return 'Edit feature';
+            return 'Edit element';
         },
         creatableFeatureTypes() {
             return this.getAllowedFeaturePostTypes().filter((postType) => {
@@ -309,7 +387,49 @@ export default {
             this.options = [];
             this.page = 1;
             this.selected = Array.isArray(newSelected) ? newSelected : [];
+            if (!this.selected.length) {
+                this.isPreviewing = false;
+            }
             this.$emit('update:value', this.selected.map((item) => item.value));
+        },
+        togglePreview() {
+            if (!this.configuredMapId || !this.selected.length) {
+                this.isPreviewing = false;
+                return;
+            }
+            this.isPreviewing = !this.isPreviewing;
+        },
+        buildEmbedUrl(mapId, featureIds) {
+            const ids = (Array.isArray(featureIds) ? featureIds : [featureIds])
+                .map((id) => parseInt(id, 10))
+                .filter((id) => id > 0);
+
+            if (!mapId || !ids.length) {
+                return '';
+            }
+
+            const cfg = typeof tainacanMapsterMetadatumForm !== 'undefined' ? tainacanMapsterMetadatumForm : null;
+            const homeUrl = cfg && cfg.homeUrl ? String(cfg.homeUrl) : '/';
+            let url;
+
+            try {
+                url = new URL(homeUrl, window.location.origin);
+            } catch (e) {
+                url = new URL('/', window.location.origin);
+            }
+
+            url.searchParams.set('tainacan_mapster_embed', '1');
+            url.searchParams.set('map_id', String(mapId));
+            url.searchParams.delete('single_feature_id');
+            url.searchParams.delete('feature_ids');
+
+            if (ids.length === 1) {
+                url.searchParams.set('single_feature_id', String(ids[0]));
+            } else {
+                url.searchParams.set('feature_ids', ids.join(','));
+            }
+
+            return url.toString();
         },
         onTyping(query) {
             this.debouncedSearch(query);
@@ -634,14 +754,23 @@ export default {
     color: var(--tainacan-secondary, #187181);
 }
 
-.tainacan-mapster-create-actions {
+.tainacan-mapster-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 0.85rem;
+    width: 100%;
+    margin-top: 0.35rem;
+}
+
+.tainacan-mapster-toolbar__create {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem 0.85rem;
-    width: 100%;
-    margin-top: 0.35rem;
+    margin-left: auto;
 }
 
 .tainacan-mapster-create-feature.add-link {
@@ -651,6 +780,43 @@ export default {
     color: var(--tainacan-secondary, #187181);
     cursor: pointer;
     text-decoration: none;
+}
+
+.tainacan-mapster-preview-toggle.add-link {
+    font-size: 0.75em;
+    display: inline-flex;
+    align-items: center;
+    color: var(--tainacan-secondary, #187181);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tainacan-mapster-preview-toggle .icon .tainacan-icon {
+    font-size: 1.35em;
+}
+
+.tainacan-mapster-preview-missing.help {
+    margin: 0;
+    font-size: 0.75em;
+    color: var(--tainacan-info-color, #505253);
+}
+
+.tainacan-mapster-preview {
+    width: 100%;
+    margin-top: 0.5rem;
+    height: 320px;
+    max-width: 100%;
+    border: 1px solid var(--tainacan-gray1, #dbdbdb);
+    border-radius: var(--tainacan-input-border-radius, 4px);
+    overflow: hidden;
+    background: var(--tainacan-background-color, #fff);
+}
+
+.tainacan-mapster-preview__frame {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
 }
 
 .ellipsed-text {

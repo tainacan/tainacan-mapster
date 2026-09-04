@@ -2,13 +2,13 @@
 Contributors: tainacan, wetah
 Tags: tainacan, mapster, maps, metadata, digital collection
 Requires at least: 6.5
-Tested up to: 6.8
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.0.1
+Stable tag: 0.1.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Unofficial integration: a Tainacan metadata type for selecting Mapster WP Maps features and rendering them on a map.
+Unofficial integration: link Tainacan collection items to Mapster WP Maps elements and show them on a map.
 
 == Description ==
 
@@ -16,48 +16,71 @@ Unofficial integration: a Tainacan metadata type for selecting Mapster WP Maps f
 
 This plugin is **not** an official Mapster product. Mapster WP Maps is developed by Mapster Technology Inc.
 
-It provides a **Mapster Feature** metadata type so collection items can reference Mapster locations, lines, and/or polygons and display them using a configured Mapster map.
+It adds a **Mapster Map** metadata type. You choose a base Mapster map, then attach Mapster locations, lines, and/or polygons (map elements) to collection items. When editing an item, you can preview the selection on that map before saving.
 
-Both Tainacan and Mapster WP Maps (free **or** Pro) must be installed and active. Mapster Pro may use a different plugin folder than the free `.org` slug, so this plugin detects Mapster at runtime (version constant, `mapster-wp-map` post type, or shortcode) instead of declaring it in `Requires Plugins`.
+**How it works:**
 
-= Rendering =
+1. In **Mapster**, create the base map (style, zoom, controls) and the map elements (locations, lines, polygons).
+2. In **Tainacan**, create a **Mapster Map** metadatum and bind it to that base map (and choose which element types are allowed).
+3. When editing a collection item, **select** existing Mapster elements — they are not drawn inside Tainacan. You can also open Mapster from the field to create new ones, then select them afterward.
 
-* On normal theme PHP output, the Mapster shortcode is rendered directly.
-* In the Tainacan admin (and other REST/AJAX contexts where HTML is injected later), maps are shown in a same-origin iframe that loads a minimal document running the same shortcode—so Mapster can boot after Vue `v-html`.
-
-Developers can override that choice with the `tainacan_mapster_should_use_embed_iframe` filter.
+**Requirements:** Tainacan and Mapster WP Maps (free or Pro) must both be installed and active.
 
 == Installation ==
 
-1. Install and activate Tainacan.
-2. Install and activate Mapster WP Maps.
-3. Upload the `tainacan-mapster` plugin folder to `/wp-content/plugins/` or install the ZIP via Plugins → Add New.
-4. Activate **Tainacan Mapster Integration**.
-5. In a collection, add a metadatum of type **Mapster Feature**, choose the Mapster map and allowed feature types, then edit items to select features.
+1. Install and activate [Tainacan](https://wordpress.org/plugins/tainacan/).
+2. Install and activate [Mapster WP Maps](https://wordpress.org/plugins/mapster-wp-maps/) (free or Pro).
+3. Install and activate **Tainacan Mapster Integration**.
+4. In Mapster, create at least one map and any locations, lines, or polygons you want to use.
+5. In a Tainacan collection, add a metadatum of type **Mapster Map**.
+6. Choose the **base map** (required) and which element types are allowed.
+7. Edit items to select map elements; use Preview if you want to check the map before saving.
 
 == Frequently Asked Questions ==
 
-= Why is the plugin inactive or showing an error notice? =
+= Why do I see an error notice after activating? =
 
-It needs **Tainacan** and **Mapster WP Maps** (free or Pro) active. The admin notice lists whichever dependency is missing. Mapster is detected by its loaded API (not by a fixed plugin slug), so Pro installs are supported.
+Tainacan and Mapster WP Maps (free or Pro) must both be active. The notice tells you which one is missing.
 
-= Does it work in the Tainacan admin item page? =
+= Does it work with Mapster Pro? =
 
-Yes. Admin/REST responses use a same-origin iframe so Mapster boots correctly after metadata HTML is injected.
+Yes. Free and Pro are both supported.
+
+= Where do I create maps and locations / lines / polygons? =
+
+In the **Mapster** admin screens. This plugin does not replace Mapster’s map editor. Tainacan only lets you pick which existing elements belong to each item and shows them on the base map configured for that metadatum.
+
+= Must every Mapster Map metadatum use a base map? =
+
+Yes. When you create or publish the metadatum, you must select a Mapster map. That map is the canvas (basemap, style, and controls); the item’s selected elements are displayed on it.
+
+= Can I draw new shapes while editing a Tainacan item? =
+
+Not inside the Tainacan form itself. Create or edit elements in Mapster (links from the field can open Mapster), then select them on the item.
+
+= Can I preview the map while editing an item? =
+
+Yes. After you select one or more map elements, use **Preview** on the metadata field to see them on the configured base map.
+
+= Where do maps appear on the public site? =
+
+Wherever your theme shows Tainacan item metadata. The map uses the base Mapster map you configured for that metadatum.
 
 = Is this an official Mapster plugin? =
 
-No. It is maintained for Tainacan interoperability with Mapster WP Maps.
+No. It is maintained for use with Tainacan and Mapster WP Maps.
 
-== Development ==
+== Screenshots ==
 
-Source code, including the Vue metadata input (`metadata_type/metadata-type.vue`) and build scripts, is at:
-
-https://github.com/tainacan/tainacan-mapster
-
-Build the metadata input bundle with `npm install && npm run build` inside the plugin directory (compiles to `metadata_type/dist/metadata-type.bundle.js` without bundling Vue).
+1. Creating a Mapster Map metadatum: choose the base map and allowed element types (locations, lines, polygons).
+2. Previewing the selected elements on the base map while editing an item.
+3. Selected map elements listed on the item form, with links to edit them in Mapster.
+4. The map displayed on a public item page (theme metadata output).
 
 == Changelog ==
 
+= 0.1.0 =
+* Beta release: Mapster Map metadata type, map preview while editing items, and map display on the public site and in the Tainacan admin.
+
 = 0.0.1 =
-* Alpha: Mapster Feature metadata type, shortcode rendering, and iframe embed for SPA/REST contexts.
+* Alpha release: initial Mapster metadata type, map preview while editing items, and map display on the public site and in the Tainacan admin.

@@ -201,8 +201,11 @@ if ( ! function_exists( 'tainacan_mapster_localize_view_mode_script' ) ) {
 			[
 				'homeUrl'                => home_url( '/' ),
 				'showingLabel'           => __( 'Showing map elements for', 'tainacan-mapster' ),
+				/* translators: %d: number of elements */
 				'elementsOnPageLabel'    => __( '%d element(s) on this page.', 'tainacan-mapster' ),
+				/* translators: %d: number of elements */
 				'focusedElementsLabel'   => __( 'Showing %d element(s) for the selected item.', 'tainacan-mapster' ),
+				/* translators: %d: number of elements */
 				'focusedNoLocationLabel' => __( 'Selected item has no map elements; showing the base map.', 'tainacan-mapster' ),
 				'loadingLabel'           => __( 'Loading…', 'tainacan-mapster' ),
 				'noMetadataLabel'        => __( 'Add a Mapster Map metadatum to the displayed metadata for this collection to use this view mode.', 'tainacan-mapster' ),
@@ -267,6 +270,26 @@ if ( ! function_exists( 'tainacan_mapster_register_exporters' ) ) {
 }
 
 add_action( 'tainacan-register-exporters', 'tainacan_mapster_register_exporters' );
+
+if ( ! function_exists( 'tainacan_mapster_register_exposers' ) ) {
+	/**
+	 * Register Mapster GeoJSON exposer with Tainacan.
+	 *
+	 * @param \Tainacan\Exposers_Handler $handler Exposers handler.
+	 */
+	function tainacan_mapster_register_exposers( $handler ) {
+		if ( ! tainacan_mapster_has_tainacan() ) {
+			return;
+		}
+
+		require_once TAINACAN_MAPSTER_PLUGIN_DIR_PATH . '/exposer/class-geojson-exposer.php';
+
+		// No leading "\": Exposers_Handler::check_class_name() prepends one when instantiating.
+		$handler->register_exposer( 'TainacanMapster\Exposer\GeoJSON' );
+	}
+}
+
+add_action( 'tainacan-register-exposers', 'tainacan_mapster_register_exposers' );
 
 if ( ! function_exists( 'tainacan_mapster_get_script_localization' ) ) {
 	/**

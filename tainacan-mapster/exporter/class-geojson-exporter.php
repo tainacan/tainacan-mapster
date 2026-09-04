@@ -5,14 +5,12 @@ namespace TainacanMapster\Exporter;
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 use Tainacan\Entities\Item;
-use Tainacan\Entities\Item_Metadata_Entity;
+use TainacanMapster\GeoJSON\Feature_Builder;
 
 /**
  * Export a collection as GeoJSON: one Feature per Mapster Map element.
  */
 class GeoJSON extends \Tainacan\Exporter\Exporter {
-
-	const MAPSTER_TYPE = 'TainacanMapster\\Metadata_Types\\Mapster_Feature';
 
 	/**
 	 * Output file key (basename with extension).
@@ -39,17 +37,6 @@ class GeoJSON extends \Tainacan\Exporter\Exporter {
 			$name = $current_collection->get_name();
 			$this->collection_filename = sanitize_title( $name ) . '_mapster.geojson';
 		}
-	}
-
-	/**
-	 * Multivalue separator for get_value_as_string().
-	 *
-	 * @param string $separator Default separator.
-	 * @return string
-	 */
-	public function filter_multivalue_separator( $separator ) {
-		$custom = $this->get_option( 'multivalued_delimiter' );
-		return ( is_string( $custom ) && '' !== $custom ) ? $custom : '||';
 	}
 
 	/**
@@ -105,7 +92,7 @@ class GeoJSON extends \Tainacan\Exporter\Exporter {
 
 	/**
 	 * @param Item                   $item     Item entity.
-	 * @param Item_Metadata_Entity[] $metadata Item metadata list.
+	 * @param \Tainacan\Entities\Item_Metadata_Entity[] $metadata Item metadata list.
 	 */
 	public function process_item( $item, $metadata ) {
 		if ( ! ( $item instanceof Item ) ) {
@@ -117,63 +104,18 @@ class GeoJSON extends \Tainacan\Exporter\Exporter {
 			$filename = $this->collection_filename;
 		}
 
-		$item_props = $this->build_item_core_properties( $item );
-		$extra_props = [];
+		require_once TAINACAN_MAPSTER_PLUGIN_DIR_PATH . '/inc/class-geojson-feature-builder.php';
 
-		if ( $this->should_include_item_metadata() ) {
-			$use_string = ! $this->should_use_json_property_values();
-			if ( $use_string ) {
-				add_filter( 'tainacan-item-metadata-get-multivalue-separator', [ $this, 'filter_multivalue_separator' ], 20 );
-			}
-			$extra_props = $this->build_item_metadata_properties( $metadata );
-			if ( $use_string ) {
-				remove_filter( 'tainacan-item-metadata-get-multivalue-separator', [ $this, 'filter_multivalue_separator' ], 20 );
-			}
-		}
+		$builder = new Feature_Builder(
+			[
+				'include_item_metadata' => $this->should_include_item_metadata(),
+				'property_value_format' => $this->should_use_json_property_values() ? 'json' : 'string',
+				'multivalued_delimiter' => $this->get_option( 'multivalued_delimiter' ),
+			]
+		);
 
-		foreach ( (array) $metadata as $item_metadata ) {
-			if ( ! ( $item_metadata instanceof Item_Metadata_Entity ) ) {
-				continue;
-			}
-
-			$metadatum = $item_metadata->get_metadatum();
-			if ( ! $metadatum || ! $this->is_mapster_map_metadatum( $metadatum ) ) {
-				continue;
-			}
-
-			$value = $item_metadata->get_value();
-			if ( empty( $value ) && '0' !== $value && 0 !== $value ) {
-				continue;
-			}
-
-			$ids = array_values(
-				array_filter(
-					array_map(
-						'absint',
-						is_array( $value ) ? $value : [ $value ]
-					)
-				)
-			);
-
-			if ( empty( $ids ) ) {
-				continue;
-			}
-
-			$geometry_source_props = [
-				'metadatum_id'   => (int) $metadatum->get_id(),
-				'metadatum_name' => (string) $metadatum->get_name(),
-				'metadatum_slug' => (string) $metadatum->get_slug(),
-			];
-
-			foreach ( $ids as $element_id ) {
-				$merged = array_merge( $item_props, $extra_props, $geometry_source_props );
-				$feature = tainacan_mapster_get_element_geojson_feature( $element_id, $merged );
-				if ( ! $feature ) {
-					continue;
-				}
-
-				$this->append_feature( $filename, $feature );
-			}
+		foreach ( $builder->features_from_item( $item ) as $feature ) {
+			$this->append_feature( $filename, $feature );
 		}
 	}
 
@@ -210,133 +152,6 @@ class GeoJSON extends \Tainacan\Exporter\Exporter {
 	 */
 	protected function should_use_json_property_values() {
 		return 'json' === $this->get_option( 'property_value_format' );
-	}
-
-	/**
-	 * @param \Tainacan\Entities\Metadatum $metadatum Metadatum entity.
-	 * @return bool
-	 */
-	protected function is_mapster_map_metadatum( $metadatum ) {
-		$type = $metadatum->get_metadata_type();
-		if ( self::MAPSTER_TYPE === $type ) {
-			return true;
-		}
-
-		return is_string( $type ) && false !== strpos( $type, 'Mapster_Feature' );
-	}
-
-	/**
-	 * Reserved property keys always present on Features.
-	 *
-	 * @return string[]
-	 */
-	protected function get_reserved_property_keys() {
-		return [
-			'tainacan_item_id',
-			'tainacan_item_title',
-			'tainacan_item_status',
-			'tainacan_item_url',
-			'metadatum_id',
-			'metadatum_name',
-			'metadatum_slug',
-			'id',
-			'name',
-			'mapster_type',
-		];
-	}
-
-	/**
-	 * Core item fields always attached to every Feature.
-	 *
-	 * @param Item $item Item entity.
-	 * @return array<string, mixed>
-	 */
-	protected function build_item_core_properties( Item $item ) {
-		$item_id = (int) $item->get_id();
-
-		return [
-			'tainacan_item_id'     => $item_id,
-			'tainacan_item_title'  => (string) $item->get_title(),
-			'tainacan_item_status' => (string) $item->get_status(),
-			'tainacan_item_url'    => $item_id ? get_permalink( $item_id ) : '',
-		];
-	}
-
-	/**
-	 * Non-Mapster metadata as slug => string or JSON-serializable value.
-	 *
-	 * @param Item_Metadata_Entity[] $metadata Item metadata list.
-	 * @return array<string, mixed>
-	 */
-	protected function build_item_metadata_properties( $metadata ) {
-		$props    = [];
-		$reserved = array_fill_keys( $this->get_reserved_property_keys(), true );
-		$as_json  = $this->should_use_json_property_values();
-
-		foreach ( (array) $metadata as $item_metadata ) {
-			if ( ! ( $item_metadata instanceof Item_Metadata_Entity ) ) {
-				continue;
-			}
-
-			$metadatum = $item_metadata->get_metadatum();
-			if ( ! $metadatum || $this->is_mapster_map_metadatum( $metadatum ) ) {
-				continue;
-			}
-
-			$slug = (string) $metadatum->get_slug();
-			if ( '' === $slug || isset( $reserved[ $slug ] ) ) {
-				continue;
-			}
-
-			$value = $item_metadata->get_value();
-			if ( empty( $value ) && '0' !== $value && 0 !== $value ) {
-				continue;
-			}
-
-			if ( $as_json ) {
-				$encoded_value = $this->get_metadata_value_as_json( $item_metadata );
-				if ( null === $encoded_value ) {
-					continue;
-				}
-				$props[ $slug ] = $encoded_value;
-				continue;
-			}
-
-			$string = $item_metadata->get_value_as_string();
-			if ( ! is_string( $string ) || '' === $string ) {
-				continue;
-			}
-
-			$props[ $slug ] = $string;
-		}
-
-		return $props;
-	}
-
-	/**
-	 * JSON-safe property value via Tainacan's get_value_as_array().
-	 *
-	 * @param Item_Metadata_Entity $item_metadata Item metadatum entity.
-	 * @return mixed|null Null when empty or not JSON-encodable.
-	 */
-	protected function get_metadata_value_as_json( Item_Metadata_Entity $item_metadata ) {
-		if ( ! method_exists( $item_metadata, 'get_value_as_array' ) ) {
-			$string = $item_metadata->get_value_as_string();
-			return ( is_string( $string ) && '' !== $string ) ? $string : null;
-		}
-
-		$raw = $item_metadata->get_value_as_array();
-		if ( null === $raw || ( is_array( $raw ) && [] === $raw ) || '' === $raw ) {
-			return null;
-		}
-
-		$json = wp_json_encode( $raw );
-		if ( ! is_string( $json ) ) {
-			return null;
-		}
-
-		$decoded = json_decode( $json, true );
-		return ( null === $decoded && 'null' !== $json ) ? null : $decoded;
 	}
 
 	/**

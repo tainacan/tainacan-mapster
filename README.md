@@ -18,17 +18,21 @@ Registers one Tainacan metadata type:
 
 Plain-text contexts (REST `value_as_string`, CSV/XLSX exporters, etc.) use `get_value_as_string()`. By default that resolves IDs to Mapster element titles. Set the metadatum option `string_format` to `geojson` to emit a GeoJSON FeatureCollection string inside those cells (experimental). Prefer the dedicated **Mapster GeoJSON** exporter for a real `.geojson` file.
 
-### GeoJSON exporter
+### GeoJSON exporter and exposer
 
-Registers Tainacan exporter slug `mapster-geojson` (**Mapster GeoJSON**):
+Both use slug `mapster-geojson` (**Mapster GeoJSON**) and the same FeatureCollection shape (shared builder in `inc/class-geojson-feature-builder.php`):
 
-- One FeatureCollection file; **one Feature per Mapster element** (multi-valued and multiple Mapster Map metadata all flatten the same way).
+- **one Feature per Mapster element** (multi-valued and multiple Mapster Map metadata all flatten the same way).
 - Always-on properties: `tainacan_item_id`, `tainacan_item_title`, `tainacan_item_status`, `tainacan_item_url`, `metadatum_id`, `metadatum_name`, `metadatum_slug`, plus element `id` / `name` / `mapster_type`.
-- Option **Include item metadata as properties** (default on): copies other non-Mapster metadata onto each Feature, keyed by metadatum slug. Mapster Map fields are geometry sources only (not duplicated as attributes).
-- Option **Property value format** (`string` | `json`, default `string`): delimited strings via `value_as_string`, or structured JSON via `get_value_as_array()` (multivalue/taxonomy/compound as arrays/objects).
-- Option **Multivalued metadata delimiter** (default `||`): used only for `string` format.
+- **Include item metadata as properties** (default on): copies other non-Mapster metadata onto each Feature, keyed by metadatum slug. Mapster Map fields are geometry sources only (not duplicated as attributes).
+- **Property value format** (`string` | `json`, default `string`): delimited strings via `value_as_string`, or structured JSON via `get_value_as_array()` (multivalue/taxonomy/compound as arrays/objects).
+- **Multivalued metadata delimiter** (default `||`): used only for `string` format.
 - Items with no resolvable Mapster geometry are omitted.
-- Stored item values remain Mapster element IDs; geometry is resolved at export time from Mapster/ACF.
+- Stored item values remain Mapster element IDs; geometry is resolved at runtime from Mapster/ACF.
+
+**Exporter** (Tainacan → Exporters): writes a downloadable `.geojson` file for chosen collections.
+
+**Exposer** (REST): append `?exposer=mapster-geojson` to an items list or single-item URL, e.g. `/wp-json/tainacan/v2/collection/{id}/items/?exposer=mapster-geojson`. Response `Content-Type` is `application/geo+json`. Optional query args: `include_item_metadata`, `property_value_format`, `multivalued_delimiter`, `mapster_metadatum` (limit to one Mapster Map metadatum ID). Normal list pagination (`perpage` / `paged`) still applies — only the current page of items is transformed.
 
 ### Items list view mode
 
@@ -79,7 +83,9 @@ Internally, Mapster still calls these “features” (`single_feature_id` / `fea
 - `tainacan-mapster/inc/helpers.php`: shared sanitization / capability / GeoJSON helpers
 - `tainacan-mapster/inc/plugin.php`: dependency checks and hook registration
 - `tainacan-mapster/inc/embed.php`: iframe embed document + heuristics
+- `tainacan-mapster/inc/class-geojson-feature-builder.php`: shared FeatureCollection builder (exporter + exposer)
 - `tainacan-mapster/exporter/class-geojson-exporter.php`: Mapster GeoJSON Tainacan exporter
+- `tainacan-mapster/exposer/class-geojson-exposer.php`: Mapster GeoJSON Tainacan exposer (REST)
 - `tainacan-mapster/view_mode/view-mode-mapster.js`: items-list Mapster Map view mode (iframe)
 - `tainacan-mapster/view_mode/view-mode-mapster.css`: view mode styles
 - `tainacan-mapster/metadata_type/metadata-type.vue`: item metadata input (Vue SFC source)

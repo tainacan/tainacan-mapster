@@ -36,7 +36,12 @@ var TainacanMetadataFormMapsterSingleFeature = {
             mapSelectLinkText: cfg.mapSelectLinkText || '',
             featureTypeLabels: cfg.featureTypeLabels || {},
             availableFeatureTypes: availableFeatureTypes,
-            allowedFeatureTypes: availableFeatureTypes.slice()
+            allowedFeatureTypes: availableFeatureTypes.slice(),
+            stringFormat: 'label',
+            stringFormatLabels: cfg.stringFormatLabels || {
+                label: 'Element titles (labels)',
+                geojson: 'GeoJSON FeatureCollection'
+            }
         };
     },
     created: function() {
@@ -49,17 +54,23 @@ var TainacanMetadataFormMapsterSingleFeature = {
         if (!this.allowedFeatureTypes.length) {
             this.allowedFeatureTypes = this.availableFeatureTypes.slice();
         }
+        this.stringFormat = this.value && this.value.string_format === 'geojson' ? 'geojson' : 'label';
         this.loadMaps();
     },
     methods: {
         emitOptions: function() {
             this.$emit('update:value', {
                 mapster_map_id: this.mapId,
-                allowed_feature_types: this.allowedFeatureTypes.slice()
+                allowed_feature_types: this.allowedFeatureTypes.slice(),
+                string_format: this.stringFormat === 'geojson' ? 'geojson' : 'label'
             });
         },
         onSelectMap: function(value) {
             this.mapId = value;
+            this.emitOptions();
+        },
+        onSelectStringFormat: function(value) {
+            this.stringFormat = value === 'geojson' ? 'geojson' : 'label';
             this.emitOptions();
         },
         onToggleFeatureType: function(postType, checked) {
@@ -152,6 +163,22 @@ var TainacanMetadataFormMapsterSingleFeature = {
                     <span class="control-label">{{ featureTypeLabel(postType) }}</span>
                 </label>
             </div>
+        </b-field>
+        <b-field :addons="false">
+            <label class="label is-inline">
+                {{ $i18n.getHelperTitle('tainacan-metadata-type-mapster-single-feature', 'string_format') }}
+                <help-button
+                        :title="$i18n.getHelperTitle('tainacan-metadata-type-mapster-single-feature', 'string_format')"
+                        :message="$i18n.getHelperMessage('tainacan-metadata-type-mapster-single-feature', 'string_format')"/>
+            </label>
+            <b-select
+                    name="string_format"
+                    :model-value="stringFormat"
+                    expanded
+                    @update:model-value="onSelectStringFormat">
+                <option value="label">{{ stringFormatLabels.label }}</option>
+                <option value="geojson">{{ stringFormatLabels.geojson }}</option>
+            </b-select>
         </b-field>
     </section>
     `

@@ -39,18 +39,14 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 					self::POST_TYPE_LINE,
 					self::POST_TYPE_POLYGON,
 				],
+				'string_format'          => 'label',
 			]
 		);
+		$preview_image = esc_url( TAINACAN_MAPSTER_PLUGIN_URL_PATH . 'assets/images/mapster-map-preview.png' );
 		$this->set_preview_template(
 			'<div>
-				<div class="taginput control is-expanded has-selected">
-					<div class="taginput-container is-focusable">
-						<div class="autocomplete control">
-							<div class="control has-icons-right is-clearfix">
-								<input type="text" class="input" value="' . esc_attr__( 'Mapster map element', 'tainacan-mapster' ) . '">
-							</div>
-						</div>
-					</div>
+				<div class="control">
+					<img src="' . $preview_image . '" alt="' . esc_attr__( 'Preview of a Mapster map with selected map elements.', 'tainacan-mapster' ) . '" />
 				</div>
 			</div>'
 		);
@@ -115,6 +111,10 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 				'title'       => __( 'Allowed element types', 'tainacan-mapster' ),
 				'description' => __( 'Choose which Mapster element types this metadatum may reference: locations, lines, and/or polygons. Select one or more.', 'tainacan-mapster' ),
 			],
+			'string_format' => [
+				'title'       => __( 'Plain-text / export format', 'tainacan-mapster' ),
+				'description' => __( 'How this metadatum appears as text (REST value_as_string, CSV/XLSX exporters, etc.). “Labels” uses element titles; “GeoJSON” outputs a FeatureCollection of the selected elements.', 'tainacan-mapster' ),
+			],
 		];
 	}
 
@@ -172,6 +172,125 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Plain-text or GeoJSON for stored Mapster element IDs.
+	 *
+	 * Format is controlled by the `string_format` metadatum option (`label` or
+	 * `geojson`). Used by REST `value_as_string`, CSV/XLSX exporters, etc.
+	 * Facet chip labels still need core support.
+	 *
+	 * @param Item_Metadata_Entity $item_metadata Item metadatum entity.
+	 * @return string
+	 */
+	public function get_value_as_string( Item_Metadata_Entity $item_metadata ) {
+		$value = $item_metadata->get_value();
+
+		if ( empty( $value ) && '0' !== $value && 0 !== $value ) {
+			return '';
+		}
+
+		$ids = array_values(
+			array_filter(
+				array_map(
+					'absint',
+					is_array( $value ) ? $value : [ $value ]
+				)
+			)
+		);
+
+		if ( empty( $ids ) ) {
+			return '';
+		}
+
+		$format = $this->get_option( 'string_format' );
+		if ( 'geojson' !== $format ) {
+			$format = 'label';
+		}
+
+		/**
+		 * Filter the string format used for Mapster Map `value_as_string`.
+		 *
+		 * @param string               $format         `label` or `geojson`.
+		 * @param Item_Metadata_Entity $item_metadata  Item metadatum entity.
+		 */
+		$format = apply_filters( 'tainacan_mapster_value_as_string_format', $format, $item_metadata );
+
+		if ( 'geojson' === $format && function_exists( 'tainacan_mapster_get_elements_geojson_string' ) ) {
+			$extra = [];
+			$item  = $item_metadata->get_item();
+			if ( $item && method_exists( $item, 'get_id' ) && $item->get_id() ) {
+				$extra['tainacan_item_id'] = (int) $item->get_id();
+			}
+
+			$return = tainacan_mapster_get_elements_geojson_string( $ids, $extra );
+		} else {
+			$labels = [];
+			foreach ( $ids as $element_id ) {
+				$label = $this->get_element_label( $element_id );
+				if ( '' !== $label ) {
+					$labels[] = $label;
+				}
+			}
+
+			if ( empty( $labels ) ) {
+				return '';
+			}
+
+			if ( $item_metadata->is_multiple() ) {
+				$prefix    = $item_metadata->get_multivalue_prefix();
+				$suffix    = $item_metadata->get_multivalue_suffix();
+				$separator = $item_metadata->get_multivalue_separator();
+				$parts     = [];
+
+				foreach ( $labels as $label ) {
+					$parts[] = $prefix . $label . $suffix;
+				}
+
+				$return = implode( $separator, $parts );
+			} else {
+				$return = $labels[0];
+			}
+		}
+
+		/**
+		 * Filter the string representation of a Mapster Map metadatum value.
+		 *
+		 * @param string               $return         Labels or GeoJSON string.
+		 * @param Item_Metadata_Entity $item_metadata  Item metadatum entity.
+		 */
+		return apply_filters( 'tainacan-item-metadata-get-value-as-string--type-mapster-map', $return, $item_metadata );
+	}
+
+	/**
+	 * Resolve a Mapster element post ID to a display label.
+	 *
+	 * @param int $element_id Mapster location / line / polygon post ID.
+	 * @return string Empty when missing or not allowed/viewable.
+	 */
+	protected function get_element_label( $element_id ) {
+		$element_id = absint( $element_id );
+		if ( ! $element_id ) {
+			return '';
+		}
+
+		$allowed = $this->get_allowed_feature_post_types();
+		$post_type = get_post_type( $element_id );
+		if ( ! in_array( $post_type, $allowed, true ) ) {
+			return '';
+		}
+
+		if ( function_exists( 'tainacan_mapster_user_can_view_post' ) && ! tainacan_mapster_user_can_view_post( $element_id ) ) {
+			return '';
+		}
+
+		$title = get_the_title( $element_id );
+		if ( ! is_string( $title ) || '' === $title ) {
+			return '#' . $element_id;
+		}
+
+		return $title;
 	}
 
 	public function get_value_as_html( Item_Metadata_Entity $item_metadata ) {

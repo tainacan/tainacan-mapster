@@ -108,3 +108,118 @@ function tainacan_mapster_sanitize_css_dimension( $value, $unit, $default = '320
 
 	return $formatted . $unit;
 }
+
+/**
+ * ACF field name that holds GeoJSON for a Mapster element post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return string Empty when unknown.
+ */
+function tainacan_mapster_get_element_geometry_field( $post_type ) {
+	switch ( $post_type ) {
+		case 'mapster-wp-location':
+			return 'location';
+		case 'mapster-wp-line':
+			return 'line';
+		case 'mapster-wp-polygon':
+			return 'polygon';
+		default:
+			return '';
+	}
+}
+
+/**
+ * Build a GeoJSON Feature for one Mapster element post.
+ *
+ * @param int   $element_id       Mapster element post ID.
+ * @param array $extra_properties Optional properties merged into the Feature.
+ * @return array|null Feature array, or null when geometry is unavailable.
+ */
+function tainacan_mapster_get_element_geojson_feature( $element_id, $extra_properties = [] ) {
+	$element_id = absint( $element_id );
+	if ( ! $element_id || ! tainacan_mapster_user_can_view_post( $element_id ) ) {
+		return null;
+	}
+
+	$post_type = get_post_type( $element_id );
+	$field     = tainacan_mapster_get_element_geometry_field( $post_type );
+	if ( ! $field || ! function_exists( 'get_field' ) ) {
+		return null;
+	}
+
+	$raw = get_field( $field, $element_id );
+	if ( is_string( $raw ) ) {
+		if ( '' === trim( $raw ) ) {
+			return null;
+		}
+		$decoded = json_decode( $raw );
+	} elseif ( is_array( $raw ) || is_object( $raw ) ) {
+		// ACF may already return decoded structures depending on field config.
+		$decoded = json_decode( wp_json_encode( $raw ) );
+	} else {
+		return null;
+	}
+
+	if ( ! $decoded ) {
+		return null;
+	}
+
+	$geometry = null;
+	if ( isset( $decoded->type ) && 'FeatureCollection' === $decoded->type && ! empty( $decoded->features[0]->geometry ) ) {
+		$geometry = $decoded->features[0]->geometry;
+	} elseif ( isset( $decoded->type ) && 'Feature' === $decoded->type && ! empty( $decoded->geometry ) ) {
+		$geometry = $decoded->geometry;
+	} elseif ( isset( $decoded->type ) && isset( $decoded->coordinates ) ) {
+		$geometry = $decoded;
+	}
+
+	if ( ! $geometry ) {
+		return null;
+	}
+
+	$title = get_the_title( $element_id );
+	$properties = array_merge(
+		[
+			'id'           => $element_id,
+			'name'         => is_string( $title ) ? $title : '',
+			'mapster_type' => $post_type,
+		],
+		(array) $extra_properties
+	);
+
+	return [
+		'type'       => 'Feature',
+		'geometry'   => $geometry,
+		'properties' => $properties,
+	];
+}
+
+/**
+ * Build a GeoJSON FeatureCollection string for Mapster element IDs.
+ *
+ * @param int[] $element_ids      Mapster element post IDs.
+ * @param array $extra_properties Properties merged into every Feature.
+ * @return string JSON FeatureCollection, or empty string when nothing usable.
+ */
+function tainacan_mapster_get_elements_geojson_string( $element_ids, $extra_properties = [] ) {
+	$features = [];
+
+	foreach ( (array) $element_ids as $element_id ) {
+		$feature = tainacan_mapster_get_element_geojson_feature( $element_id, $extra_properties );
+		if ( $feature ) {
+			$features[] = $feature;
+		}
+	}
+
+	if ( empty( $features ) ) {
+		return '';
+	}
+
+	$collection = [
+		'type'     => 'FeatureCollection',
+		'features' => $features,
+	];
+
+	$json = wp_json_encode( $collection );
+	return is_string( $json ) ? $json : '';
+}

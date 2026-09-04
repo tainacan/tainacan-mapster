@@ -147,6 +147,34 @@ add_action( 'init', 'tainacan_mapster_bootstrap', 20 );
  */
 add_action( 'tainacan-register-vuejs-component', 'tainacan_mapster_register_metadata_form_component' );
 
+if ( ! function_exists( 'tainacan_mapster_register_exporters' ) ) {
+	/**
+	 * Register Mapster GeoJSON exporter with Tainacan.
+	 *
+	 * @param \Tainacan\Exporter_Handler $handler Exporter handler.
+	 */
+	function tainacan_mapster_register_exporters( $handler ) {
+		if ( ! tainacan_mapster_has_tainacan() ) {
+			return;
+		}
+
+		require_once TAINACAN_MAPSTER_PLUGIN_DIR_PATH . '/exporter/class-geojson-exporter.php';
+
+		$handler->register_exporter(
+			[
+				'name'              => __( 'Mapster GeoJSON', 'tainacan-mapster' ),
+				'description'       => __( 'Export Mapster Map elements from a collection as a GeoJSON FeatureCollection (one Feature per map element). Optionally attach other item metadata as Feature properties.', 'tainacan-mapster' ),
+				'slug'              => 'mapster-geojson',
+				'class_name'        => '\TainacanMapster\Exporter\GeoJSON',
+				'manual_mapping'    => false,
+				'manual_collection' => true,
+			]
+		);
+	}
+}
+
+add_action( 'tainacan-register-exporters', 'tainacan_mapster_register_exporters' );
+
 if ( ! function_exists( 'tainacan_mapster_get_script_localization' ) ) {
 	/**
 	 * Shared localization payload for Mapster metadata scripts.
@@ -189,6 +217,10 @@ if ( ! function_exists( 'tainacan_mapster_get_script_localization' ) ) {
 			'homeUrl'               => home_url( '/' ),
 			'previewMapLabel'       => __( 'Preview', 'tainacan-mapster' ),
 			'previewMapMissing'     => __( 'Configure a base Mapster map for this metadatum to preview the selection.', 'tainacan-mapster' ),
+			'stringFormatLabels'    => [
+				'label'   => __( 'Element titles (labels)', 'tainacan-mapster' ),
+				'geojson' => __( 'GeoJSON FeatureCollection', 'tainacan-mapster' ),
+			],
 		];
 	}
 }

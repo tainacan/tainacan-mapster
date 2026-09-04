@@ -66,6 +66,10 @@ Yes. After you select one or more map elements, use **Preview** on the metadata 
 
 Wherever your theme shows Tainacan item metadata. The map uses the base Mapster map you configured for that metadatum.
 
+= Can I export items as GeoJSON? =
+
+Yes. Use the **Mapster GeoJSON** exporter under Tainacan → Exporters. It writes a FeatureCollection with one Feature per selected Mapster element. You can optionally attach other item metadata as Feature properties. Items without map geometry are skipped. (CSV/XLSX can also embed GeoJSON in a cell if a Mapster Map metadatum uses the GeoJSON plain-text format — the dedicated exporter is better for GIS tools.)
+
 = Is this an official Mapster plugin? =
 
 No. It is maintained for use with Tainacan and Mapster WP Maps.
@@ -78,6 +82,9 @@ No. It is maintained for use with Tainacan and Mapster WP Maps.
 4. The map displayed on a public item page (theme metadata output).
 
 == Changelog ==
+
+= 0.2.0 =
+* Mapster GeoJSON exporter: FeatureCollection export with optional item metadata as Feature properties (string or JSON), including a multivalue delimiter option.
 
 = 0.1.0 =
 * Beta release: Mapster Map metadata type, map preview while editing items, and map display on the public site and in the Tainacan admin.

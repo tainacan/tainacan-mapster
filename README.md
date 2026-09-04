@@ -16,6 +16,20 @@ Registers one Tainacan metadata type:
 2. **Tainacan metadatum:** create a **Mapster Map** field; `mapster_map_id` (base map) is required when publishing; choose `allowed_feature_types`.
 3. **Tainacan item edit:** select existing element IDs (autocomplete). Drawing/editing geometry stays in Mapster; optional create links open Mapster’s “new post” screens.
 
+Plain-text contexts (REST `value_as_string`, CSV/XLSX exporters, etc.) use `get_value_as_string()`. By default that resolves IDs to Mapster element titles. Set the metadatum option `string_format` to `geojson` to emit a GeoJSON FeatureCollection string inside those cells (experimental). Prefer the dedicated **Mapster GeoJSON** exporter for a real `.geojson` file.
+
+### GeoJSON exporter
+
+Registers Tainacan exporter slug `mapster-geojson` (**Mapster GeoJSON**):
+
+- One FeatureCollection file; **one Feature per Mapster element** (multi-valued and multiple Mapster Map metadata all flatten the same way).
+- Always-on properties: `tainacan_item_id`, `tainacan_item_title`, `tainacan_item_status`, `tainacan_item_url`, `metadatum_id`, `metadatum_name`, `metadatum_slug`, plus element `id` / `name` / `mapster_type`.
+- Option **Include item metadata as properties** (default on): copies other non-Mapster metadata onto each Feature, keyed by metadatum slug. Mapster Map fields are geometry sources only (not duplicated as attributes).
+- Option **Property value format** (`string` | `json`, default `string`): delimited strings via `value_as_string`, or structured JSON via `get_value_as_array()` (multivalue/taxonomy/compound as arrays/objects).
+- Option **Multivalued metadata delimiter** (default `||`): used only for `string` format.
+- Items with no resolvable Mapster geometry are omitted.
+- Stored item values remain Mapster element IDs; geometry is resolved at export time from Mapster/ACF.
+
 When available, the type calls `set_manage_multiple_input( true )` so it can own multivalue UI (taginput + selected tab), similar to Relationship. The item form includes an optional **Preview** toggle that embeds the current selection on the configured map (same iframe endpoint as admin/REST rendering).
 
 ### Options
@@ -25,8 +39,9 @@ When available, the type calls `set_manage_multiple_input( true )` so it can own
   - `mapster-wp-location`
   - `mapster-wp-line`
   - `mapster-wp-polygon`
+- `string_format` (`label` | `geojson`, default `label`): how `value_as_string` serializes selected elements for exporters/REST.
 
-Default is all three.
+Default `allowed_feature_types` is all three.
 
 ### Rendering
 
@@ -51,13 +66,15 @@ Internally, Mapster still calls these “features” (`single_feature_id` / `fea
 ## Structure
 
 - `tainacan-mapster/tainacan-mapster.php`: plugin bootstrap
-- `tainacan-mapster/inc/helpers.php`: shared sanitization / capability helpers
+- `tainacan-mapster/inc/helpers.php`: shared sanitization / capability / GeoJSON helpers
 - `tainacan-mapster/inc/plugin.php`: dependency checks and hook registration
 - `tainacan-mapster/inc/embed.php`: iframe embed document + heuristics
+- `tainacan-mapster/exporter/class-geojson-exporter.php`: Mapster GeoJSON Tainacan exporter
 - `tainacan-mapster/metadata_type/metadata-type.vue`: item metadata input (Vue SFC source)
 - `tainacan-mapster/metadata_type/build.js`: compiles the SFC into a host-Vue-compatible script
 - `tainacan-mapster/metadata_type/dist/metadata-type.bundle.js`: built script loaded by WordPress
 - `tainacan-mapster/metadata_type/metadata-type-form.js`: metadata options form (plain JS)
+- `tainacan-mapster/assets/images/mapster-map-preview.png`: metadata type picker preview image
 - `wp-repo-assets/`: WordPress.org directory screenshots / banners / icons (not in the plugin ZIP; see that folder’s README)
 
 ## Dependencies

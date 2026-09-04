@@ -30,6 +30,16 @@ Registers Tainacan exporter slug `mapster-geojson` (**Mapster GeoJSON**):
 - Items with no resolvable Mapster geometry are omitted.
 - Stored item values remain Mapster element IDs; geometry is resolved at export time from Mapster/ACF.
 
+### Items list view mode
+
+Registers view mode slug `mapster` (**Mapster Map**):
+
+- Component strategy ([extra view modes](https://tainacan.github.io/tainacan-wiki/#/dev/extra-view-modes)); enable it under the collection’s enabled view modes.
+- User picks which **displayed** Mapster Map metadatum to use (same idea as core Map view + GeoCoordinate).
+- Collects element IDs from items on the **current result page**, builds the existing same-origin Mapster **iframe embed** with that metadatum’s `mapster_map_id`.
+- Sidebar lists items that have Mapster values: click to **reload the iframe** focused on that item’s element(s); **Open item** links to the public page; **Show all on map** clears the focus.
+- Files: `view_mode/view-mode-mapster.js`, `view_mode/view-mode-mapster.css`.
+
 When available, the type calls `set_manage_multiple_input( true )` so it can own multivalue UI (taginput + selected tab), similar to Relationship. The item form includes an optional **Preview** toggle that embeds the current selection on the configured map (same iframe endpoint as admin/REST rendering).
 
 ### Options
@@ -70,6 +80,8 @@ Internally, Mapster still calls these “features” (`single_feature_id` / `fea
 - `tainacan-mapster/inc/plugin.php`: dependency checks and hook registration
 - `tainacan-mapster/inc/embed.php`: iframe embed document + heuristics
 - `tainacan-mapster/exporter/class-geojson-exporter.php`: Mapster GeoJSON Tainacan exporter
+- `tainacan-mapster/view_mode/view-mode-mapster.js`: items-list Mapster Map view mode (iframe)
+- `tainacan-mapster/view_mode/view-mode-mapster.css`: view mode styles
 - `tainacan-mapster/metadata_type/metadata-type.vue`: item metadata input (Vue SFC source)
 - `tainacan-mapster/metadata_type/build.js`: compiles the SFC into a host-Vue-compatible script
 - `tainacan-mapster/metadata_type/dist/metadata-type.bundle.js`: built script loaded by WordPress

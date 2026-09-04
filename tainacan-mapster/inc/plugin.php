@@ -147,6 +147,99 @@ add_action( 'init', 'tainacan_mapster_bootstrap', 20 );
  */
 add_action( 'tainacan-register-vuejs-component', 'tainacan_mapster_register_metadata_form_component' );
 
+if ( ! function_exists( 'tainacan_mapster_register_view_mode' ) ) {
+	/**
+	 * Register Mapster items-list view mode (iframe of collected element IDs).
+	 *
+	 * @param \Tainacan\Component_Hooks $helper Component hooks helper.
+	 */
+	function tainacan_mapster_register_view_mode( $helper ) {
+		if ( ! tainacan_mapster_has_dependencies() || ! function_exists( 'tainacan_register_view_mode' ) ) {
+			return;
+		}
+
+		$script_url = TAINACAN_MAPSTER_PLUGIN_URL_PATH . 'view_mode/view-mode-mapster.js';
+		$helper->register_vuejs_component(
+			'tainacan-mapster-view-mode',
+			$script_url,
+			[
+				'public' => true,
+				'deps'   => [ 'wp-i18n' ],
+			]
+		);
+
+		tainacan_register_view_mode(
+			'mapster',
+			[
+				'label'               => __( 'Mapster Map', 'tainacan-mapster' ),
+				'description'         => __( 'Plot Mapster map elements from a selected Mapster Map metadatum on the configured base map (current result page).', 'tainacan-mapster' ),
+				'icon'                => '<span class="icon"><i><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--tainacan-info-color, #505253)" width="1.25em" height="1.25em"><path d="M15,19L9,16.89V5L15,7.11M20.5,3C20.44,3 20.39,3 20.34,3L15,5.1L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,18.9L15,21L20.64,19.1C20.85,19 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z" /></svg></i></span>',
+				'type'                => 'component',
+				'component'           => 'view-mode-mapster',
+				'dynamic_metadata'    => true,
+				'implements_skeleton' => true,
+				'requires_thumbnail'  => false,
+			]
+		);
+	}
+}
+
+add_action( 'tainacan-register-vuejs-component', 'tainacan_mapster_register_view_mode' );
+
+if ( ! function_exists( 'tainacan_mapster_localize_view_mode_script' ) ) {
+	/**
+	 * Localize strings/URLs after Tainacan enqueues the view-mode script (init 80).
+	 */
+	function tainacan_mapster_localize_view_mode_script() {
+		if ( ! tainacan_mapster_has_dependencies() || ! wp_script_is( 'tainacan-mapster-view-mode', 'enqueued' ) ) {
+			return;
+		}
+
+		wp_localize_script(
+			'tainacan-mapster-view-mode',
+			'tainacanMapsterViewMode',
+			[
+				'homeUrl'                => home_url( '/' ),
+				'showingLabel'           => __( 'Showing map elements for', 'tainacan-mapster' ),
+				'elementsOnPageLabel'    => __( '%d element(s) on this page.', 'tainacan-mapster' ),
+				'focusedElementsLabel'   => __( 'Showing %d element(s) for the selected item.', 'tainacan-mapster' ),
+				'focusedNoLocationLabel' => __( 'Selected item has no map elements; showing the base map.', 'tainacan-mapster' ),
+				'loadingLabel'           => __( 'Loading…', 'tainacan-mapster' ),
+				'noMetadataLabel'        => __( 'Add a Mapster Map metadatum to the displayed metadata for this collection to use this view mode.', 'tainacan-mapster' ),
+				'noMapLabel'             => __( 'The selected Mapster Map metadatum has no base map configured.', 'tainacan-mapster' ),
+				'noItemsLabel'           => __( 'No items to show.', 'tainacan-mapster' ),
+				'noFeaturesLabel'        => __( 'No items with map elements on this page; showing the base map.', 'tainacan-mapster' ),
+				'iframeTitle'            => __( 'Mapster map', 'tainacan-mapster' ),
+				'openItemLabel'          => __( 'Open item', 'tainacan-mapster' ),
+				'showAllLabel'           => __( 'Show all on map', 'tainacan-mapster' ),
+			]
+		);
+	}
+}
+
+add_action( 'init', 'tainacan_mapster_localize_view_mode_script', 81 );
+
+if ( ! function_exists( 'tainacan_mapster_enqueue_view_mode_styles' ) ) {
+	/**
+	 * Styles for the Mapster items-list view mode.
+	 */
+	function tainacan_mapster_enqueue_view_mode_styles() {
+		if ( ! tainacan_mapster_has_dependencies() ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'tainacan-mapster-view-mode',
+			TAINACAN_MAPSTER_PLUGIN_URL_PATH . 'view_mode/view-mode-mapster.css',
+			[],
+			TAINACAN_MAPSTER_VERSION
+		);
+	}
+}
+
+add_action( 'wp_enqueue_scripts', 'tainacan_mapster_enqueue_view_mode_styles', 20 );
+add_action( 'admin_enqueue_scripts', 'tainacan_mapster_enqueue_view_mode_styles', 20 );
+
 if ( ! function_exists( 'tainacan_mapster_register_exporters' ) ) {
 	/**
 	 * Register Mapster GeoJSON exporter with Tainacan.

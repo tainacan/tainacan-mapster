@@ -4,7 +4,7 @@ Tags: tainacan, mapster, maps, metadata, digital collection
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.3.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -70,6 +70,10 @@ Wherever your theme shows Tainacan item metadata. The map uses the base Mapster 
 
 Yes. Use the **Mapster GeoJSON** exporter under Tainacan → Exporters. It writes a FeatureCollection with one Feature per selected Mapster element. You can optionally attach other item metadata as Feature properties. Items without map geometry are skipped. (CSV/XLSX can also embed GeoJSON in a cell if a Mapster Map metadatum uses the GeoJSON plain-text format — the dedicated exporter is better for GIS tools.)
 
+= Can I see all items on a map in the items list? =
+
+Yes. Enable the **Mapster Map** view mode for the collection, include a Mapster Map metadatum in the displayed metadata, then choose that view. It plots Mapster elements for the **current page** of results on the metadatum’s base map.
+
 = Is this an official Mapster plugin? =
 
 No. It is maintained for use with Tainacan and Mapster WP Maps.
@@ -82,6 +86,9 @@ No. It is maintained for use with Tainacan and Mapster WP Maps.
 4. The map displayed on a public item page (theme metadata output).
 
 == Changelog ==
+
+= 0.3.0 =
+* Mapster Map items-list view mode: select a Mapster Map metadatum and show its elements for the current page on the configured base map (iframe embed).
 
 = 0.2.0 =
 * Mapster GeoJSON exporter: FeatureCollection export with optional item metadata as Feature properties (string or JSON), including a multivalue delimiter option.

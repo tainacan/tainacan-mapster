@@ -1,0 +1,314 @@
+.tainacan-mapster-view-mode {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.tainacan-mapster-view-mode__panel {
+	border: 1px solid var(--tainacan-input-border-color, #dbdbdb);
+	border-radius: var(--tainacan-item-border-radius, 0);
+	overflow: hidden;
+	background: var(--tainacan-background-color, #fff);
+	display: flex;
+	flex-direction: column;
+}
+
+.tainacan-mapster-view-mode__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.75rem;
+	padding: 0.65rem 1rem;
+	color: var(--tainacan-label-color, inherit);
+	font-family: var(--tainacan-font-family, inherit);
+	border-bottom: 1px solid var(--tainacan-input-border-color, #dbdbdb);
+	background: var(--tainacan-background-color, #fff);
+}
+
+.tainacan-mapster-view-mode__label {
+	font-size: 0.875rem;
+	margin: 0;
+}
+
+.tainacan-mapster-view-mode__count {
+	font-size: 0.8125rem;
+	opacity: 0.85;
+	flex: 1 1 auto;
+	min-width: 12rem;
+}
+
+.tainacan-mapster-view-mode__status {
+	padding: 2rem 1rem;
+	text-align: center;
+}
+
+.tainacan-mapster-view-mode__status p {
+	margin: 0 auto;
+	max-width: 36rem;
+}
+
+.tainacan-mapster-view-mode__layout {
+	display: flex;
+	height: 60vh;
+	min-height: 360px;
+	overflow: hidden;
+}
+
+.tainacan-mapster-view-mode__cards {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	width: 286px;
+	max-width: 286px;
+	flex: 0 0 286px;
+	height: 100%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	border-inline-end: 1px solid var(--tainacan-input-border-color, #dbdbdb);
+}
+
+.tainacan-mapster-view-mode__cards > li {
+	width: 100%;
+}
+
+.tainacan-mapster-view-mode__card {
+	max-width: 100%;
+	border-radius: var(--tainacan-item-border-radius, 0);
+	background-color: var(--tainacan-item-background-color, transparent);
+	border-bottom: 1px solid var(--tainacan-item-hover-background-color, #f2f2f2);
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.tainacan-mapster-view-mode__card:hover,
+.tainacan-mapster-view-mode__card:focus,
+.tainacan-mapster-view-mode__card:focus-within,
+.tainacan-mapster-view-mode__card.is-hovered {
+	background-color: var(--tainacan-item-hover-background-color, #f2f2f2);
+	outline: none;
+}
+
+.tainacan-mapster-view-mode__card.is-non-located {
+	opacity: 0.35;
+}
+
+.tainacan-mapster-view-mode__card.is-non-located:hover,
+.tainacan-mapster-view-mode__card.is-non-located:focus,
+.tainacan-mapster-view-mode__card.is-non-located:focus-within,
+.tainacan-mapster-view-mode__card.is-non-located.is-hovered,
+.tainacan-mapster-view-mode__card.is-non-located.is-focused {
+	opacity: 1;
+}
+
+.tainacan-mapster-view-mode__card.is-focused {
+	background-color: var(--tainacan-item-hover-background-color, #f2f2f2);
+}
+
+.tainacan-mapster-view-mode__card.is-focused .tainacan-mapster-view-mode__card-title-text {
+	font-weight: 700;
+}
+
+.tainacan-mapster-view-mode__card-title {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	min-height: 40px;
+	min-width: 100%;
+	padding: 0.25em 1.125em;
+	color: var(--tainacan-heading-color, inherit);
+	transition: background-color 0.3s ease;
+}
+
+.tainacan-mapster-view-mode__card-title-text {
+	line-height: 1.5em;
+	font-size: 0.875em !important;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	margin: 0;
+	width: 100%;
+}
+
+.tainacan-mapster-view-mode__card-title-text :deep(p),
+.tainacan-mapster-view-mode__card-title-text p {
+	margin: 0;
+	display: inline;
+}
+
+.tainacan-mapster-view-mode__card-thumb {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	border-radius: var(--tainacan-item-border-radius, 0);
+	flex-shrink: 0;
+	margin-inline-start: auto;
+}
+
+.tainacan-mapster-view-mode__stage {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	min-height: 0;
+}
+
+.tainacan-mapster-view-mode__record {
+	position: absolute;
+	z-index: 2;
+	inset-block-start: 10px;
+	inset-inline-start: 10px;
+	width: min(286px, calc(100% - 20px));
+	max-height: calc(60vh - 24px);
+	overflow: auto;
+	background: var(--tainacan-background-color, #fff);
+	border: 2px solid rgba(0, 0, 0, 0.2);
+	border-radius: var(--tainacan-item-border-radius, 0);
+	box-shadow: 0 0 12px -10px var(--tainacan-black, #000);
+}
+
+.tainacan-mapster-view-mode__record-close {
+	appearance: none;
+	position: absolute;
+	inset-inline-end: 8px;
+	inset-block-start: 8px;
+	z-index: 3;
+	width: 1.75rem;
+	height: 1.75rem;
+	border-radius: 100%;
+	border: 2px solid rgba(0, 0, 0, 0.2);
+	background: var(--tainacan-background-color, #fff);
+	cursor: pointer;
+	line-height: 1;
+	font-size: 1.1rem;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--tainacan-info-color, #505253);
+}
+
+.tainacan-mapster-view-mode__record-close:hover,
+.tainacan-mapster-view-mode__record-close:focus {
+	background-color: var(--tainacan-item-hover-background-color, #f2f2f2);
+	outline: none;
+}
+
+.tainacan-mapster-view-mode__record-title {
+	box-sizing: border-box;
+	padding: 0.75em 2.5em 0.75em 1.125em;
+	color: var(--tainacan-heading-color, inherit);
+	border-bottom: 1px solid var(--tainacan-item-hover-background-color, #f2f2f2);
+}
+
+.tainacan-mapster-view-mode__record-title p {
+	margin: 0;
+	font-size: 0.875em;
+	font-weight: 700;
+	line-height: 1.4;
+	word-break: break-word;
+}
+
+.tainacan-mapster-view-mode__record-link-wrap {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.tainacan-mapster-view-mode__record-link-wrap:hover .tainacan-mapster-view-mode__record-title,
+.tainacan-mapster-view-mode__record-link-wrap:focus .tainacan-mapster-view-mode__record-title {
+	background-color: var(--tainacan-item-hover-background-color, #f2f2f2);
+}
+
+.tainacan-mapster-view-mode__record-body {
+	padding: var(--tainacan-container-padding, 1rem);
+	padding-top: 0.75em;
+	font-size: 1em;
+	color: var(--tainacan-info-color, #505253);
+	overflow: hidden;
+}
+
+.tainacan-mapster-view-mode__record-thumb {
+	float: inline-end;
+	width: 120px;
+	max-width: 45%;
+	height: auto;
+	max-height: 120px;
+	object-fit: cover;
+	border-radius: var(--tainacan-item-border-radius, 0);
+	margin-block: 0 0.75rem;
+	margin-inline: 0.75rem 0;
+	background: var(--tainacan-block-gray1, #f2f2f2);
+}
+
+.tainacan-mapster-view-mode__record-field {
+	margin-bottom: 0.85rem;
+	overflow: hidden;
+}
+
+.tainacan-mapster-view-mode__record-field:last-of-type {
+	margin-bottom: 0;
+}
+
+.tainacan-mapster-view-mode__record-field .metadata-label {
+	margin: 0 0 0.35em;
+	padding-top: 0;
+	font-size: 0.75em;
+	font-weight: 700;
+	color: var(--tainacan-info-color, #505253);
+}
+
+.tainacan-mapster-view-mode__record-field .metadata-value {
+	margin: 0;
+	font-size: 0.75em;
+	color: var(--tainacan-info-color, #505253);
+	word-break: break-word;
+}
+
+.tainacan-mapster-view-mode__map {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 0;
+	background: var(--tainacan-block-gray1, #f2f2f2);
+}
+
+.tainacan-mapster-view-mode__iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+@media (max-width: 768px) {
+	.tainacan-mapster-view-mode__layout {
+		flex-direction: column;
+		height: auto;
+	}
+
+	.tainacan-mapster-view-mode__cards {
+		width: 100%;
+		max-width: none;
+		flex: 0 0 auto;
+		max-height: 40vh;
+		border-inline-end: 0;
+		border-bottom: 1px solid var(--tainacan-input-border-color, #dbdbdb);
+	}
+
+	.tainacan-mapster-view-mode__stage {
+		min-height: 50vh;
+	}
+
+	.tainacan-mapster-view-mode__map {
+		min-height: 50vh;
+	}
+
+	.tainacan-mapster-view-mode__iframe {
+		min-height: 50vh;
+	}
+
+	.tainacan-mapster-view-mode__record {
+		max-height: calc(50vh - 24px);
+	}
+}

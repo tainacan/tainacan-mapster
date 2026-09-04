@@ -141,11 +141,9 @@ function tainacan_mapster_render_embed_document() {
 	$feature_ids = tainacan_mapster_sanitize_feature_ids( $feature_ids );
 
 	if ( empty( $feature_ids ) ) {
-		status_header( 404 );
-		wp_die( esc_html__( 'No viewable Mapster map elements were found for this embed.', 'tainacan-mapster' ), '', [ 'response' => 404 ] );
-	}
-
-	if ( 1 === count( $feature_ids ) ) {
+		// Base map only (e.g. items-list view mode with no located items on the page).
+		$shortcode = sprintf( '[mapster_wp_map id="%d"]', $map_id );
+	} elseif ( 1 === count( $feature_ids ) ) {
 		$shortcode = sprintf(
 			'[mapster_wp_map id="%d" single_feature_id="%d"]',
 			$map_id,

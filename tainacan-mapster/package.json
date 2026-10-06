@@ -1,6 +1,6 @@
 {
   "name": "tainacan-mapster",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Tainacan integration plugin for using Mapster Maps as a Tainacan Metadata.",
   "private": true,
   "scripts": {

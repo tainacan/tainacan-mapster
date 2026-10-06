@@ -4,7 +4,7 @@ Tags: tainacan, mapster, maps, metadata, digital collection
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -90,6 +90,9 @@ No. It is maintained for use with Tainacan and Mapster WP Maps.
 4. The map displayed on a public item page (theme metadata output).
 
 == Changelog ==
+
+= 0.5.0 =
+* Removal of ACF Disabled status from Tainacan admin.
 
 = 0.4.0 =
 * Mapster GeoJSON exposer: fetch the same FeatureCollection via the REST API with `?exposer=mapster-geojson`.

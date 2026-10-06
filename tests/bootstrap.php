@@ -18,7 +18,7 @@ if ( ! defined( 'TAINACAN_MAPSTER_PLUGIN_DIR_PATH' ) ) {
 }
 
 if ( ! defined( 'TAINACAN_MAPSTER_VERSION' ) ) {
-	define( 'TAINACAN_MAPSTER_VERSION', '0.4.0-test' );
+	define( 'TAINACAN_MAPSTER_VERSION', '0.5.0-test' );
 }
 
 require_once $plugin_dir . '/inc/helpers.php';

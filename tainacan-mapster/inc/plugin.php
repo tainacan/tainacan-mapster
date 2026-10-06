@@ -379,6 +379,32 @@ if ( ! function_exists( 'tainacan_mapster_localize_metadata_input_script' ) ) {
 
 add_action( 'admin_enqueue_scripts', 'tainacan_mapster_localize_metadata_input_script', 85 );
 
+if ( ! function_exists( 'tainacan_mapster_filter_tainacan_admin_statuses' ) ) {
+	/**
+	 * Hide ACF's global "Inactive" status (acf-disabled) from Tainacan admin.
+	 *
+	 * Mapster bundles ACF, which registers that status for field groups. WordPress
+	 * statuses are not limited to a post type, and Tainacan lists every public
+	 * status. The admin list is filterable via tainacan_admin_available_statuses.
+	 */
+	function tainacan_mapster_filter_tainacan_admin_statuses() {
+		if ( ! tainacan_mapster_has_dependencies() ) {
+			return;
+		}
+
+		$handle = 'tainacan-mapster-admin-statuses';
+
+		wp_register_script( $handle, false, [ 'wp-hooks' ], TAINACAN_MAPSTER_VERSION, true );
+		wp_enqueue_script( $handle );
+		wp_add_inline_script(
+			$handle,
+			"wp.hooks.addFilter('tainacan_admin_available_statuses','tainacan-mapster',function(statuses){if(!Array.isArray(statuses)){return statuses;}return statuses.filter(function(status){return !status||status.slug!=='acf-disabled';});});"
+		);
+	}
+}
+
+add_action( 'admin_enqueue_scripts', 'tainacan_mapster_filter_tainacan_admin_statuses', 20 );
+
 if ( ! function_exists( 'tainacan_mapster_enqueue_frontend_styles' ) ) {
 	/**
 	 * Enqueue shortcode-map CSS once, when a map is actually rendered.

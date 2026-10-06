@@ -379,26 +379,28 @@ if ( ! function_exists( 'tainacan_mapster_localize_metadata_input_script' ) ) {
 
 add_action( 'admin_enqueue_scripts', 'tainacan_mapster_localize_metadata_input_script', 85 );
 
-if ( ! function_exists( 'tainacan_mapster_get_frontend_styles_html' ) ) {
+if ( ! function_exists( 'tainacan_mapster_enqueue_frontend_styles' ) ) {
 	/**
-	 * Inline shortcode-map CSS once, when a map is actually rendered.
+	 * Enqueue shortcode-map CSS once, when a map is actually rendered.
 	 *
 	 * Theme metadata values are often display:inline-block, which shrink-wraps
 	 * Mapster's percentage-sized container to 0×0. Rules target only our wrapper
 	 * and Mapster's root — not descendants (loader overlay must still hide).
 	 *
-	 * @return string Empty after the first call.
+	 * Printed from wp_footer because item metadata HTML is built after wp_head,
+	 * and an inline <style> inside that HTML is stripped by Tainacan's kses.
 	 */
-	function tainacan_mapster_get_frontend_styles_html() {
-		static $printed = false;
+	function tainacan_mapster_enqueue_frontend_styles() {
+		static $enqueued = false;
 
-		if ( $printed ) {
-			return '';
+		if ( $enqueued ) {
+			return;
 		}
 
-		$printed = true;
+		$enqueued = true;
 
-		$css = '
+		$handle = 'tainacan-mapster-frontend';
+		$css    = '
 			.tainacan-mapster-map {
 				display: block;
 				width: 100%;
@@ -414,10 +416,31 @@ if ( ! function_exists( 'tainacan_mapster_get_frontend_styles_html' ) ) {
 			}
 		';
 
-		return sprintf(
-			'<style id="tainacan-mapster-frontend-css">%s</style>',
-			wp_strip_all_tags( $css )
-		);
+		if ( ! wp_style_is( $handle, 'registered' ) ) {
+			wp_register_style( $handle, false, [], defined( 'TAINACAN_MAPSTER_VERSION' ) ? TAINACAN_MAPSTER_VERSION : false );
+		}
+
+		wp_enqueue_style( $handle );
+		wp_add_inline_style( $handle, wp_strip_all_tags( $css ) );
+
+		if ( did_action( 'wp_head' ) ) {
+			add_action( 'wp_footer', 'tainacan_mapster_print_frontend_styles', 20 );
+		}
+	}
+}
+
+if ( ! function_exists( 'tainacan_mapster_print_frontend_styles' ) ) {
+	/**
+	 * Print the frontend map stylesheet when it was enqueued after wp_head.
+	 */
+	function tainacan_mapster_print_frontend_styles() {
+		$handle = 'tainacan-mapster-frontend';
+
+		if ( ! wp_style_is( $handle, 'enqueued' ) || wp_style_is( $handle, 'done' ) ) {
+			return;
+		}
+
+		wp_print_styles( $handle );
 	}
 }
 

@@ -492,7 +492,7 @@ if ( ! window.tainacan_extra_components['view-mode-mapster'] ) {
 										@keydown.enter.prevent="focusItemOnMap(row.item.id)"
 										@keydown.space.prevent="focusItemOnMap(row.item.id)">
 									<div class="tainacan-mapster-view-mode__card-title metadata-title">
-										<p
+										<div
 												class="tainacan-mapster-view-mode__card-title-text"
 												v-html="row.title" />
 										<img
@@ -524,7 +524,7 @@ if ( ! window.tainacan_extra_components['view-mode-mapster'] ) {
 										:href="focusedRow.url"
 										:aria-label="cfg.openItemLabel || 'Open item'">
 									<div class="tainacan-mapster-view-mode__record-title metadata-title">
-										<p v-html="focusedRow.title" />
+										<div v-html="focusedRow.title" />
 									</div>
 									<div class="tainacan-mapster-view-mode__record-body">
 										<img
@@ -535,7 +535,7 @@ if ( ! window.tainacan_extra_components['view-mode-mapster'] ) {
 										<template v-for="field in recordFields(focusedRow.item)" :key="field.id">
 											<div class="tainacan-mapster-view-mode__record-field">
 												<h3 class="metadata-label">{{ field.name }}</h3>
-												<p
+												<div
 														class="metadata-value"
 														v-html="field.html" />
 											</div>
@@ -546,7 +546,7 @@ if ( ! window.tainacan_extra_components['view-mode-mapster'] ) {
 										v-else
 										class="tainacan-mapster-view-mode__record-fallback">
 									<div class="tainacan-mapster-view-mode__record-title metadata-title">
-										<p v-html="focusedRow.title" />
+										<div v-html="focusedRow.title" />
 									</div>
 									<div class="tainacan-mapster-view-mode__record-body">
 										<img
@@ -557,7 +557,7 @@ if ( ! window.tainacan_extra_components['view-mode-mapster'] ) {
 										<template v-for="field in recordFields(focusedRow.item)" :key="field.id">
 											<div class="tainacan-mapster-view-mode__record-field">
 												<h3 class="metadata-label">{{ field.name }}</h3>
-												<p
+												<div
 														class="metadata-value"
 														v-html="field.html" />
 											</div>

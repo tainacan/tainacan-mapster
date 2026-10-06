@@ -1,5 +1,6 @@
 <template>
     <div
+            :id="featureInputId"
             class="tainacan-mapster-feature-input"
             :class="{ 'is-flex is-flex-wrap-wrap': itemMetadatum.metadatum.multiple != 'yes' }">
         <b-tabs
@@ -8,7 +9,6 @@
                 animated>
             <b-tab-item :label="selectTabLabel">
                 <b-taginput
-                        :id="featureInputId"
                         v-a11y-autocomplete
                         expanded
                         :disabled="disabled"
@@ -193,6 +193,7 @@ export default {
     name: 'TainacanMetadataTypeMapsterSingleFeature',
     props: {
         itemMetadatum: Object,
+        inputId: String,
         value: [String, Number, Array],
         disabled: false,
         isLastMetadatum: false,
@@ -296,6 +297,9 @@ export default {
             return this.selected.length < this.maxMultipleValues;
         },
         featureInputId() {
+            if (this.inputId) {
+                return this.inputId;
+            }
             if (this.itemMetadatum && this.itemMetadatum.metadatum) {
                 return 'tainacan-item-metadatum_id-' + this.itemMetadatum.metadatum.id + (this.itemMetadatum.parent_meta_id ? ('_parent_meta_id-' + this.itemMetadatum.parent_meta_id) : '');
             }

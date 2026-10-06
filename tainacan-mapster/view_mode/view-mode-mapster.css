@@ -202,7 +202,7 @@
 	border-bottom: 1px solid var(--tainacan-item-hover-background-color, #f2f2f2);
 }
 
-.tainacan-mapster-view-mode__record-title p {
+.tainacan-mapster-view-mode__record-title > div {
 	margin: 0;
 	font-size: 0.875em;
 	font-weight: 700;

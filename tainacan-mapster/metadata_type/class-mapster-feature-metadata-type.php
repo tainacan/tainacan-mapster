@@ -407,13 +407,13 @@ class Mapster_Feature extends \Tainacan\Metadata_Types\Metadata_Type {
 			);
 		}
 
-		$styles = function_exists( 'tainacan_mapster_get_frontend_styles_html' )
-			? tainacan_mapster_get_frontend_styles_html()
-			: '';
+		if ( function_exists( 'tainacan_mapster_enqueue_frontend_styles' ) ) {
+			tainacan_mapster_enqueue_frontend_styles();
+		}
 
-		// Wrapper + inline CSS keep the map block-level when themes style
-		// metadata values as inline-block (which collapses Mapster to 0×0).
-		return $styles . sprintf(
+		// Wrapper keeps the map block-level when themes style metadata values
+		// as inline-block (which collapses Mapster to 0×0). CSS is printed in the footer.
+		return sprintf(
 			'<div class="tainacan-mapster-map">%s</div>',
 			do_shortcode( $shortcode )
 		);

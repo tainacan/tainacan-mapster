@@ -1,3 +1,6 @@
+composer.phar
 tainacan-mapster/node_modules
 tainacan-mapster/*/node_modules
+/vendor/
+.phpunit.result.cache
 .vscode

@@ -108,6 +108,24 @@ WordPress.org user-facing copy lives in `tainacan-mapster/readme.txt`. Keep tech
 
 Repository: https://github.com/tainacan/tainacan-mapster
 
+### PHPUnit (unit)
+
+Lightweight tests for helpers, GeoJSON feature-builder options, and exposer request parsing. They use stubs — no WordPress test suite or database required.
+
+From the repository root (inside the `tainacan_build` container, or any environment with Composer):
+
+```bash
+composer install
+composer test
+# or: vendor/bin/phpunit
+```
+
+Example via Docker:
+
+```bash
+docker exec tainacan_build sh -c 'cd /src/tainacan-mapster && composer install && vendor/bin/phpunit'
+```
+
 ## Build
 
 From the repository root (or inside the Docker container):
